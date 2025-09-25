@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Navigation } from "@/components/navigation"
+import { LocationFinder } from "@/components/location-finder"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Coins, Gift, Smartphone, Utensils, Droplets, Star, Clock, CheckCircle, Copy, ExternalLink } from "lucide-react"
+import { Coins, Gift, Smartphone, Utensils, Droplets, Star, Clock, CheckCircle, Copy, ExternalLink, MapPin } from "lucide-react"
+import type { NearbyStore } from "@/hooks/use-google-maps"
 
 const userCoins = 2450
 
@@ -168,16 +170,31 @@ export default function Rewards() {
   const [selectedCategory, setSelectedCategory] = useState("food")
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [showRedemptionDialog, setShowRedemptionDialog] = useState(false)
+  const [showLocationFinder, setShowLocationFinder] = useState(false)
+  const [selectedStore, setSelectedStore] = useState<NearbyStore | null>(null)
   const [redemptionCode, setRedemptionCode] = useState("")
 
   const handleRedeem = (item: any) => {
     if (userCoins >= item.cost) {
-      // Generate mock redemption code
-      const code = `${item.name.substring(0, 2).toUpperCase()}${Date.now().toString().slice(-6)}`
-      setRedemptionCode(code)
       setSelectedItem(item)
-      setShowRedemptionDialog(true)
+      setShowLocationFinder(true)
     }
+  }
+
+  const handleStoreSelect = (store: NearbyStore) => {
+    setSelectedStore(store)
+    setShowLocationFinder(false)
+    
+    // Generate mock redemption code
+    const code = `${selectedItem?.name.substring(0, 2).toUpperCase()}${Date.now().toString().slice(-6)}`
+    setRedemptionCode(code)
+    setShowRedemptionDialog(true)
+  }
+
+  const handleLocationFinderClose = () => {
+    setShowLocationFinder(false)
+    setSelectedItem(null)
+    setSelectedStore(null)
   }
 
   const copyCode = () => {
@@ -373,7 +390,7 @@ export default function Rewards() {
         </div>
       </div>
 
-      {/* Redemption Dialog */}
+      {/* Enhanced Redemption Dialog */}
       <Dialog open={showRedemptionDialog} onOpenChange={setShowRedemptionDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -391,6 +408,31 @@ export default function Rewards() {
               <div className="text-3xl font-mono font-bold text-primary mb-2">{redemptionCode}</div>
               <p className="text-sm text-muted-foreground">Voucher Code</p>
             </div>
+
+            {/* Store Information */}
+            {selectedStore && (
+              <div className="p-4 bg-accent/10 rounded-lg">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  Pickup Location
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">{selectedStore.name}</p>
+                  <p className="text-muted-foreground">{selectedStore.address}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline" className="text-xs">
+                      {selectedStore.distance}km away
+                    </Badge>
+                    {selectedStore.isOpen !== null && (
+                      <Badge variant={selectedStore.isOpen ? "default" : "secondary"} className="text-xs">
+                        {selectedStore.isOpen ? "Open Now" : "Currently Closed"}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Partner Store:</span>
@@ -411,11 +453,44 @@ export default function Rewards() {
               <Copy className="h-4 w-4 mr-2" />
               Copy Code
             </Button>
-            <Button onClick={() => setShowRedemptionDialog(false)} className="flex-1">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Find Store
-            </Button>
+            {selectedStore ? (
+              <Button 
+                onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selectedStore.location.lat},${selectedStore.location.lng}`, '_blank')}
+                className="flex-1"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Get Directions
+              </Button>
+            ) : (
+              <Button onClick={() => setShowRedemptionDialog(false)} className="flex-1">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Find Store
+              </Button>
+            )}
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Location Finder Dialog */}
+      <Dialog open={showLocationFinder} onOpenChange={handleLocationFinderClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Find Store Location
+            </DialogTitle>
+            <DialogDescription>
+              Select a nearby store to redeem your {selectedItem?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedItem && (
+            <LocationFinder
+              rewardType={selectedCategory as 'food' | 'hygiene' | 'connectivity'}
+              rewardItem={selectedItem}
+              onStoreSelect={handleStoreSelect}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
