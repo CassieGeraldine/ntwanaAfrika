@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { Navigation } from "@/components/navigation"
+import { AIQuiz } from "@/components/ai-quiz"
+import { CareerImageGenerator } from "@/components/career-image-generator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -173,6 +175,9 @@ export default function Dreamland() {
   const [selectedCareer, setSelectedCareer] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [interests, setInterests] = useState<string[]>(["Science", "Technology"])
+  const [showQuiz, setShowQuiz] = useState(false)
+  const [imageGeneratorOpen, setImageGeneratorOpen] = useState(false)
+  const [selectedCareerForImage, setSelectedCareerForImage] = useState<typeof careerPaths[0] | null>(null)
 
   const filteredCareers = careerPaths.filter(
     (career) =>
@@ -323,6 +328,19 @@ export default function Dreamland() {
                               <p className="font-medium">Job Market:</p>
                               <p className="text-muted-foreground">{career.growth}</p>
                             </div>
+                            <div className="pt-3 border-t">
+                              <Button
+                                size="sm"
+                                className="w-full"
+                                onClick={() => {
+                                  setSelectedCareerForImage(career)
+                                  setImageGeneratorOpen(true)
+                                }}
+                              >
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Try It - See Yourself as {career.title.split(' ').slice(-1)[0]}
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -411,24 +429,63 @@ export default function Dreamland() {
             </Card>
           </div>
 
-          {/* Call to Action */}
-          <div className="mt-8 text-center">
-            <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-              <CardContent className="p-6">
-                <Rocket className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">Ready to Explore Your Future?</h3>
-                <p className="text-muted-foreground mb-4">
-                  Take our career assessment quiz to discover paths that match your interests and strengths.
-                </p>
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Start Career Quiz
+          {/* AI Quiz Section */}
+          {showQuiz ? (
+            <div className="mt-8">
+              <div className="mb-6 text-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowQuiz(false)}
+                  className="mb-4"
+                >
+                  ← Back to Career Explorer
                 </Button>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <AIQuiz 
+                interests={interests} 
+                onComplete={() => setShowQuiz(false)}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Call to Action */}
+              <div className="mt-8 text-center">
+                <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
+                  <CardContent className="p-6">
+                    <Rocket className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-2">Ready to Explore Your Future?</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Take our AI-powered career assessment quiz to discover paths that match your interests and strengths.
+                    </p>
+                    <Button 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/90"
+                      onClick={() => setShowQuiz(true)}
+                    >
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Start AI Career Quiz
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Career Image Generator Modal */}
+      {selectedCareerForImage && (
+        <CareerImageGenerator
+          isOpen={imageGeneratorOpen}
+          onClose={() => {
+            setImageGeneratorOpen(false)
+            setSelectedCareerForImage(null)
+          }}
+          careerTitle={selectedCareerForImage.title}
+          careerDescription={selectedCareerForImage.description}
+          careerIcon={selectedCareerForImage.icon}
+        />
+      )}
     </div>
   )
 }
