@@ -1,4 +1,4 @@
-# 🎓 MwanAfrika - Learning Feeds the Future
+# 🎓 ntwanaAfrika - Learning Feeds the Future
 
 **A gamified educational platform designed to empower underprivileged students across Africa through curriculum-aligned learning and real-world rewards.**
 
