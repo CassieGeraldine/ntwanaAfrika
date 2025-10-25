@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -17,6 +18,7 @@ import {
   Menu,
   X,
   Settings,
+  LogOut,
 } from "lucide-react";
 import { LanguageSelector } from "./language-selector";
 
@@ -38,6 +40,16 @@ const accountItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { logout, userProfile, currentUser } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <>
@@ -89,6 +101,17 @@ export function Navigation() {
                   </Link>
                 );
               })}
+              {/* Logout Button for Mobile */}
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="flex flex-col items-center gap-1 p-3 rounded-lg transition-colors hover:bg-muted"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="text-xs font-medium">
+                  {currentUser?.isAnonymous ? "Exit Guest" : "Sign Out"}
+                </span>
+              </Button>
             </nav>
           </div>
         )}
@@ -163,6 +186,17 @@ export function Navigation() {
                   </Link>
                 );
               })}
+              {/* Logout Button */}
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg transition-colors text-white hover:bg-white/5"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-medium">
+                  {currentUser?.isAnonymous ? "Exit Guest Mode" : "Sign Out"}
+                </span>
+              </Button>
             </nav>
           </div>
         </div>
@@ -172,8 +206,18 @@ export function Navigation() {
           <div className="flex items-center gap-3 px-2">
             <User className="h-5 w-5 text-white" />
             <div>
-              <div className="font-medium text-white">Student</div>
-              <div className="text-sm text-white/70">Level 5 • 1,250 coins</div>
+              <div className="font-medium text-white">
+                {currentUser?.isAnonymous 
+                  ? "Guest User" 
+                  : currentUser?.email || "Student"
+                }
+              </div>
+              <div className="text-sm text-white/70">
+                {currentUser?.isAnonymous 
+                  ? "Browsing as guest"
+                  : "Level 5 • 1,250 coins"
+                }
+              </div>
             </div>
           </div>
         </div>
