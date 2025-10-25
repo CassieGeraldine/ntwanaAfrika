@@ -1,13 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import { useUserData } from "@/hooks/use-user-data"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ChevronRight, Globe, BookOpen, Gift, Users, ArrowRight } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  ChevronRight,
+  Globe,
+  BookOpen,
+  Gift,
+  Users,
+  ArrowRight,
+} from "lucide-react";
 
 const countries = [
   {
@@ -35,7 +40,7 @@ const countries = [
     flag: "🇲🇼",
     languages: ["English", "Chichewa", "Tumbuka"],
   },
-]
+];
 
 const tutorialSteps = [
   {
@@ -56,53 +61,39 @@ const tutorialSteps = [
     description: "Exchange coins for food, hygiene items, airtime, and data",
     color: "bg-accent",
   },
-]
+];
 
 export default function Onboarding() {
-  const [step, setStep] = useState(1)
-  const [selectedCountry, setSelectedCountry] = useState("")
-  const [selectedLanguage, setSelectedLanguage] = useState("")
-  const router = useRouter()
-  const { currentUser } = useAuth()
-  const { updatePreferences } = useUserData()
+  const [step, setStep] = useState(1);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const router = useRouter();
 
   const handleCountrySelect = (country: string) => {
-    setSelectedCountry(country)
-    setSelectedLanguage("")
-  }
+    setSelectedCountry(country);
+    setSelectedLanguage("");
+  };
 
   const handleLanguageSelect = (language: string) => {
-    setSelectedLanguage(language)
-  }
+    setSelectedLanguage(language);
+  };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (step < 3) {
-      setStep(step + 1)
+      setStep(step + 1);
     } else {
-      // Save preferences to Firebase if user is authenticated
-      if (currentUser) {
-        try {
-          await updatePreferences({
-            country: selectedCountry,
-            language: selectedLanguage,
-          })
-        } catch (error) {
-          console.error('Error saving preferences:', error)
-        }
-      }
-      
-      // Save to localStorage as backup
-      localStorage.setItem("userCountry", selectedCountry)
-      localStorage.setItem("userLanguage", selectedLanguage)
-      localStorage.setItem("onboardingComplete", "true")
-      router.push("/")
+      // Save preferences and redirect to dashboard
+      localStorage.setItem("userCountry", selectedCountry);
+      localStorage.setItem("userLanguage", selectedLanguage);
+      localStorage.setItem("onboardingComplete", "true");
+      router.push("/");
     }
-  }
+  };
 
   const canProceed = () => {
-    if (step === 1) return selectedCountry && selectedLanguage
-    return true
-  }
+    if (step === 1) return selectedCountry && selectedLanguage;
+    return true;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary/20 via-background to-accent/20 flex items-center justify-center p-4">
@@ -111,10 +102,16 @@ export default function Onboarding() {
         {step === 1 && (
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-secondary-foreground font-bold text-2xl">M</span>
+              <span className="text-secondary-foreground font-bold text-2xl">
+                M
+              </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-balance">Welcome to MwanAfrika</h1>
-            <p className="text-xl text-muted-foreground font-medium">Learning feeds the future</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-balance">
+              Welcome to MwanAfrika
+            </h1>
+            <p className="text-xl text-muted-foreground font-medium">
+              Learning feeds the future
+            </p>
           </div>
         )}
 
@@ -125,7 +122,9 @@ export default function Onboarding() {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`w-3 h-3 rounded-full transition-colors ${i <= step ? "bg-primary" : "bg-muted"}`}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      i <= step ? "bg-primary" : "bg-muted"
+                    }`}
                   />
                 ))}
               </div>
@@ -168,16 +167,24 @@ export default function Onboarding() {
 
                 {selectedCountry && (
                   <div>
-                    <h3 className="font-semibold mb-3">Choose your preferred language:</h3>
+                    <h3 className="font-semibold mb-3">
+                      Choose your preferred language:
+                    </h3>
                     <div className="flex flex-wrap gap-2">
                       {countries
                         .find((c) => c.name === selectedCountry)
                         ?.languages.map((language) => (
                           <Badge
                             key={language}
-                            variant={selectedLanguage === language ? "default" : "outline"}
+                            variant={
+                              selectedLanguage === language
+                                ? "default"
+                                : "outline"
+                            }
                             className={`cursor-pointer px-4 py-2 ${
-                              selectedLanguage === language ? "bg-primary hover:bg-primary/90" : "hover:bg-muted"
+                              selectedLanguage === language
+                                ? "bg-primary hover:bg-primary/90"
+                                : "hover:bg-muted"
                             }`}
                             onClick={() => handleLanguageSelect(language)}
                           >
@@ -194,26 +201,37 @@ export default function Onboarding() {
             {step === 2 && (
               <div className="space-y-6">
                 <div className="text-center mb-6">
-                  <p className="text-muted-foreground">Here's how you'll earn rewards while learning:</p>
+                  <p className="text-muted-foreground">
+                    Here's how you'll earn rewards while learning:
+                  </p>
                 </div>
 
                 <div className="space-y-4">
                   {tutorialSteps.map((tutorialStep, index) => {
-                    const Icon = tutorialStep.icon
+                    const Icon = tutorialStep.icon;
                     return (
-                      <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-muted/30">
+                      <div
+                        key={index}
+                        className="flex items-start gap-4 p-4 rounded-lg bg-muted/30"
+                      >
                         <div
                           className={`w-12 h-12 rounded-xl ${tutorialStep.color} flex items-center justify-center flex-shrink-0`}
                         >
                           <Icon className="h-6 w-6 text-white" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold mb-1">{tutorialStep.title}</h4>
-                          <p className="text-sm text-muted-foreground">{tutorialStep.description}</p>
+                          <h4 className="font-semibold mb-1">
+                            {tutorialStep.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {tutorialStep.description}
+                          </p>
                         </div>
-                        <div className="text-2xl font-bold text-primary">{index + 1}</div>
+                        <div className="text-2xl font-bold text-primary">
+                          {index + 1}
+                        </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
 
@@ -234,7 +252,9 @@ export default function Onboarding() {
 
                 <div>
                   <h3 className="text-xl font-bold mb-2">You're all set!</h3>
-                  <p className="text-muted-foreground mb-4">Welcome to your learning journey with MwanAfrika.</p>
+                  <p className="text-muted-foreground mb-4">
+                    Welcome to your learning journey with MwanAfrika.
+                  </p>
 
                   <div className="bg-muted/50 rounded-lg p-4 text-sm">
                     <div className="flex items-center justify-between mb-2">
@@ -283,9 +303,11 @@ export default function Onboarding() {
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-muted-foreground">
-          <p>By continuing, you agree to help make education accessible for all</p>
+          <p>
+            By continuing, you agree to help make education accessible for all
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

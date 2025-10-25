@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import { ProtectedRoute } from "@/components/protected-route"
-import { GuestModeBanner } from "@/components/guest-mode-banner"
-import { Navigation } from "@/components/navigation"
-import { ProgressRing } from "@/components/progress-ring"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
+import { GuestModeBanner } from "@/components/guest-mode-banner";
+import { Navigation } from "@/components/navigation";
+import { ProgressRing } from "@/components/progress-ring";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
   Trophy,
@@ -23,49 +23,99 @@ import {
   Gift,
   TrendingUp,
   Award,
-} from "lucide-react"
+} from "lucide-react";
 
 function Dashboard() {
-  const { userProfile, currentUser } = useAuth()
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+  const { userProfile, currentUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   // Use Firebase user data or fallback to defaults
-  const userLevel = userProfile?.level || 1
-  const skillCoins = userProfile?.skillCoins || 0
-  const currentStreak = userProfile?.streak || 0
-  const levelProgress = Math.min((skillCoins % 1000) / 10, 100) // Calculate progress based on coins
+  const userLevel = userProfile?.level || 1;
+  const skillCoins = userProfile?.skillCoins || 0;
+  const currentStreak = userProfile?.streak || 0;
+  const levelProgress = Math.min((skillCoins % 1000) / 10, 100); // Calculate progress based on coins
 
   useEffect(() => {
     // Check if onboarding is complete for authenticated users
     if (currentUser) {
-      const onboardingComplete = localStorage.getItem("onboardingComplete")
+      const onboardingComplete = localStorage.getItem("onboardingComplete");
       if (!onboardingComplete && (!userProfile?.country || !userProfile?.language)) {
-        router.push("/onboarding")
-        return
+        router.push("/onboarding");
+        return;
       }
     }
-    setIsLoading(false)
-  }, [router, currentUser, userProfile])
+    setIsLoading(false);
+  }, [router, currentUser, userProfile]);
 
   const dailyQuests = [
-    { id: 1, title: "Complete 2 Math lessons", progress: 1, total: 2, reward: 50, completed: false },
-    { id: 2, title: "Practice reading for 15 minutes", progress: 15, total: 15, reward: 30, completed: true },
-    { id: 3, title: "Answer 10 science questions", progress: 7, total: 10, reward: 40, completed: false },
-  ]
+    {
+      id: 1,
+      title: "Complete 2 Math lessons",
+      progress: 1,
+      total: 2,
+      reward: 50,
+      completed: false,
+    },
+    {
+      id: 2,
+      title: "Practice reading for 15 minutes",
+      progress: 15,
+      total: 15,
+      reward: 30,
+      completed: true,
+    },
+    {
+      id: 3,
+      title: "Answer 10 science questions",
+      progress: 7,
+      total: 10,
+      reward: 40,
+      completed: false,
+    },
+  ];
 
   const recentBadges = [
     { name: "Math Master", icon: "🧮", earned: "Today", rarity: "gold" },
     { name: "Reading Star", icon: "📚", earned: "Yesterday", rarity: "silver" },
-    { name: "Science Explorer", icon: "🔬", earned: "2 days ago", rarity: "bronze" },
-  ]
+    {
+      name: "Science Explorer",
+      icon: "🔬",
+      earned: "2 days ago",
+      rarity: "bronze",
+    },
+  ];
 
   const subjects = [
-    { name: "Mathematics", icon: "🧮", progress: 85, lessons: 24, color: "text-chart-1" },
-    { name: "Reading", icon: "📚", progress: 92, lessons: 18, color: "text-chart-2" },
-    { name: "Science", icon: "🔬", progress: 67, lessons: 15, color: "text-chart-3" },
-    { name: "Life Skills", icon: "🌱", progress: 45, lessons: 12, color: "text-chart-4" },
-  ]
+    {
+      name: "Mathematics",
+      icon: "🧮",
+      progress: 85,
+      lessons: 24,
+      color: "text-chart-1",
+    },
+    {
+      name: "Reading",
+      icon: "📚",
+      progress: 92,
+      lessons: 18,
+      color: "text-chart-2",
+    },
+    {
+      name: "Science",
+      icon: "🔬",
+      progress: 67,
+      lessons: 15,
+      color: "text-chart-3",
+    },
+    {
+      name: "Life Skills",
+      icon: "🌱",
+      progress: 45,
+      lessons: 12,
+      color: "text-chart-4",
+    },
+  ];
 
   const weeklyStats = [
     { day: "Mon", lessons: 3, coins: 150 },
@@ -75,14 +125,14 @@ function Dashboard() {
     { day: "Fri", lessons: 3, coins: 150 },
     { day: "Sat", lessons: 2, coins: 100 },
     { day: "Sun", lessons: 0, coins: 0 },
-  ]
+  ];
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -112,7 +162,9 @@ function Dashboard() {
               <div className="flex items-center gap-2 bg-destructive/10 px-3 py-2 rounded-lg">
                 <Flame className="h-5 w-5 text-destructive animate-pulse-glow" />
                 <span className="font-bold text-lg">{currentStreak}</span>
-                <span className="text-sm text-muted-foreground">day streak</span>
+                <span className="text-sm text-muted-foreground">
+                  day streak
+                </span>
               </div>
             </div>
           </div>
@@ -122,16 +174,23 @@ function Dashboard() {
             <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center gap-6">
-                  <ProgressRing progress={levelProgress} size={100} className="text-primary">
+                  <ProgressRing
+                    progress={levelProgress}
+                    size={100}
+                    className="text-primary"
+                  >
                     <div className="text-center">
                       <div className="text-2xl font-bold">{userLevel}</div>
                       <div className="text-xs text-muted-foreground">Level</div>
                     </div>
                   </ProgressRing>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2">Level {userLevel} Scholar</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Level {userLevel} Scholar
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-3">
-                      {100 - levelProgress} XP needed to reach Level {userLevel + 1}
+                      {100 - levelProgress} XP needed to reach Level{" "}
+                      {userLevel + 1}
                     </p>
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1">
@@ -157,7 +216,9 @@ function Dashboard() {
                   <Coins className="h-5 w-5 text-secondary" />
                   <span className="text-sm font-medium">Skill Coins</span>
                 </div>
-                <div className="text-2xl font-bold">{skillCoins.toLocaleString()}</div>
+                <div className="text-2xl font-bold">
+                  {skillCoins.toLocaleString()}
+                </div>
                 <div className="flex items-center gap-1 text-xs text-accent">
                   <TrendingUp className="h-3 w-3" />
                   <span>+250 today</span>
@@ -172,7 +233,9 @@ function Dashboard() {
                   <span className="text-sm font-medium">Lessons</span>
                 </div>
                 <div className="text-2xl font-bold">69</div>
-                <span className="text-xs text-muted-foreground">completed this month</span>
+                <span className="text-xs text-muted-foreground">
+                  completed this month
+                </span>
               </CardContent>
             </Card>
 
@@ -194,7 +257,9 @@ function Dashboard() {
                   <span className="text-sm font-medium">Rank</span>
                 </div>
                 <div className="text-2xl font-bold">#23</div>
-                <span className="text-xs text-muted-foreground">in your school</span>
+                <span className="text-xs text-muted-foreground">
+                  in your school
+                </span>
               </CardContent>
             </Card>
           </div>
@@ -221,7 +286,10 @@ function Dashboard() {
                     <div className="flex-1">
                       <p className="font-medium text-sm">{quest.title}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Progress value={(quest.progress / quest.total) * 100} className="flex-1 h-2" />
+                        <Progress
+                          value={(quest.progress / quest.total) * 100}
+                          className="flex-1 h-2"
+                        />
                         <span className="text-xs text-muted-foreground">
                           {quest.progress}/{quest.total}
                         </span>
@@ -229,10 +297,15 @@ function Dashboard() {
                     </div>
                     <div className="flex items-center gap-1 text-secondary">
                       <Coins className="h-4 w-4" />
-                      <span className="text-sm font-medium">{quest.reward}</span>
+                      <span className="text-sm font-medium">
+                        {quest.reward}
+                      </span>
                     </div>
                     {quest.completed && (
-                      <Badge variant="default" className="bg-accent animate-bounce-in">
+                      <Badge
+                        variant="default"
+                        className="bg-accent animate-bounce-in"
+                      >
                         ✓
                       </Badge>
                     )}
@@ -258,11 +331,17 @@ function Dashboard() {
                     <div className="text-2xl">{subject.icon}</div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm">{subject.name}</span>
-                        <span className="text-xs text-muted-foreground">{subject.lessons} lessons</span>
+                        <span className="font-medium text-sm">
+                          {subject.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {subject.lessons} lessons
+                        </span>
                       </div>
                       <Progress value={subject.progress} className="h-2" />
-                      <span className="text-xs text-muted-foreground">{subject.progress}% complete</span>
+                      <span className="text-xs text-muted-foreground">
+                        {subject.progress}% complete
+                      </span>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
@@ -286,17 +365,21 @@ function Dashboard() {
                     key={index}
                     className="flex-shrink-0 text-center p-4 rounded-lg border bg-gradient-to-b from-muted/30 to-muted/50 min-w-[120px] hover:shadow-md transition-shadow"
                   >
-                    <div className="text-3xl mb-2 animate-bounce-in">{badge.icon}</div>
+                    <div className="text-3xl mb-2 animate-bounce-in">
+                      {badge.icon}
+                    </div>
                     <p className="font-medium text-sm">{badge.name}</p>
-                    <p className="text-xs text-muted-foreground">{badge.earned}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {badge.earned}
+                    </p>
                     <Badge
                       variant="outline"
                       className={`mt-2 text-xs ${
                         badge.rarity === "gold"
                           ? "border-secondary text-secondary"
                           : badge.rarity === "silver"
-                            ? "border-muted-foreground text-muted-foreground"
-                            : "border-destructive/50 text-destructive/70"
+                          ? "border-muted-foreground text-muted-foreground"
+                          : "border-destructive/50 text-destructive/70"
                       }`}
                     >
                       {badge.rarity}
@@ -313,7 +396,11 @@ function Dashboard() {
               <BookOpen className="h-5 w-5 mr-2" />
               Continue Learning
             </Button>
-            <Button variant="outline" className="flex-1 bg-transparent" size="lg">
+            <Button
+              variant="outline"
+              className="flex-1 bg-transparent"
+              size="lg"
+            >
               <Gift className="h-5 w-5 mr-2" />
               View Rewards
             </Button>
@@ -321,11 +408,11 @@ function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function DashboardContent() {
-  return <Dashboard />
+  return <Dashboard />;
 }
 
 export default function DashboardPage() {
@@ -333,5 +420,5 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <DashboardContent />
     </ProtectedRoute>
-  )
+  );
 }
