@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { ProtectedRoute } from "@/components/protected-route"
+import { GuestModeBanner } from "@/components/guest-mode-banner"
 import { Navigation } from "@/components/navigation"
 import { ProgressRing } from "@/components/progress-ring"
 import { Button } from "@/components/ui/button"
@@ -22,23 +25,28 @@ import {
   Award,
 } from "lucide-react"
 
-export default function Dashboard() {
-  const [userLevel] = useState(12)
-  const [skillCoins] = useState(2450)
-  const [currentStreak] = useState(7)
-  const [levelProgress] = useState(75)
+function Dashboard() {
+  const { userProfile, currentUser } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
+  // Use Firebase user data or fallback to defaults
+  const userLevel = userProfile?.level || 1
+  const skillCoins = userProfile?.skillCoins || 0
+  const currentStreak = userProfile?.streak || 0
+  const levelProgress = Math.min((skillCoins % 1000) / 10, 100) // Calculate progress based on coins
+
   useEffect(() => {
-    // Check if onboarding is complete
-    const onboardingComplete = localStorage.getItem("onboardingComplete")
-    if (!onboardingComplete) {
-      router.push("/onboarding")
-      return
+    // Check if onboarding is complete for authenticated users
+    if (currentUser) {
+      const onboardingComplete = localStorage.getItem("onboardingComplete")
+      if (!onboardingComplete && (!userProfile?.country || !userProfile?.language)) {
+        router.push("/onboarding")
+        return
+      }
     }
     setIsLoading(false)
-  }, [router])
+  }, [router, currentUser, userProfile])
 
   const dailyQuests = [
     { id: 1, title: "Complete 2 Math lessons", progress: 1, total: 2, reward: 50, completed: false },
@@ -84,12 +92,22 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0">
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
+          {/* Guest Mode Banner */}
+          <GuestModeBanner />
+          
           {/* Welcome Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-balance">Welcome back, Amara! 👋</h1>
-                <p className="text-muted-foreground">Ready to continue your learning journey?</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-balance">
+                  Welcome{currentUser?.isAnonymous ? '' : ' back'}, {userProfile?.displayName || 'Learner'}! 👋
+                </h1>
+                <p className="text-muted-foreground">
+                  {currentUser?.isAnonymous 
+                    ? 'Start your learning journey in guest mode!' 
+                    : 'Ready to continue your learning journey?'
+                  }
+                </p>
               </div>
               <div className="flex items-center gap-2 bg-destructive/10 px-3 py-2 rounded-lg">
                 <Flame className="h-5 w-5 text-destructive animate-pulse-glow" />
@@ -303,5 +321,17 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  )
+}
+
+function DashboardContent() {
+  return <Dashboard />
+}
+
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   )
 }

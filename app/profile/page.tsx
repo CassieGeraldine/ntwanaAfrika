@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   User,
   Trophy,
@@ -106,6 +108,7 @@ const recentActivity = [
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("overview")
+  const { currentUser, userProfile } = useAuth()
 
   const getBadgeRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -126,6 +129,18 @@ export default function Profile() {
 
       <div className="md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0">
         <div className="p-4 md:p-6 max-w-6xl mx-auto">
+          {/* Anonymous User Warning */}
+          {currentUser?.isAnonymous && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20">
+              <User className="h-4 w-4" />
+              <AlertDescription>
+                You're using guest mode. Your progress won't be saved permanently. 
+                <Button variant="link" className="p-0 h-auto font-semibold text-primary ml-1">
+                  Create an account
+                </Button> to save your progress and unlock all features.
+              </AlertDescription>
+            </Alert>
+          )}
           {/* Profile Header */}
           <Card className="mb-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
             <CardContent className="p-6">

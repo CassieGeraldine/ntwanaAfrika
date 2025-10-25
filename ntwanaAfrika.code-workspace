@@ -1,0 +1,124 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "files.exclude": {
+      "node_modules": true,
+      ".next": true,
+      "dist": true
+    },
+    "search.exclude": {
+      "node_modules": true,
+      ".next": true,
+      "dist": true
+    },
+    "emmet.includeLanguages": {
+      "javascript": "javascriptreact",
+      "typescript": "typescriptreact"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-typescript-next",
+      "ms-vscode.vscode-json",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.path-intellisense",
+      "ms-vscode.vscode-npm-script"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "dev",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "dev"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "isBackground": true,
+        "problemMatcher": {
+          "owner": "nextjs",
+          "fileLocation": "relative",
+          "pattern": {
+            "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error)\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        }
+      },
+      {
+        "label": "build",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "build"],
+        "group": "build"
+      },
+      {
+        "label": "lint",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "lint"],
+        "group": "test"
+      },
+      {
+        "label": "Team Setup",
+        "type": "shell",
+        "command": "./tools/setup-team.sh",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": true,
+          "panel": "shared"
+        }
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Next.js: debug server-side",
+        "type": "node-terminal",
+        "request": "launch",
+        "command": "npm run dev"
+      },
+      {
+        "name": "Next.js: debug client-side",
+        "type": "pwa-chrome",
+        "request": "launch",
+        "url": "http://localhost:3000"
+      }
+    ]
+  }
+}

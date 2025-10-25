@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { useUserData } from "@/hooks/use-user-data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,6 +63,8 @@ export default function Onboarding() {
   const [selectedCountry, setSelectedCountry] = useState("")
   const [selectedLanguage, setSelectedLanguage] = useState("")
   const router = useRouter()
+  const { currentUser } = useAuth()
+  const { updatePreferences } = useUserData()
 
   const handleCountrySelect = (country: string) => {
     setSelectedCountry(country)
@@ -71,11 +75,23 @@ export default function Onboarding() {
     setSelectedLanguage(language)
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 3) {
       setStep(step + 1)
     } else {
-      // Save preferences and redirect to dashboard
+      // Save preferences to Firebase if user is authenticated
+      if (currentUser) {
+        try {
+          await updatePreferences({
+            country: selectedCountry,
+            language: selectedLanguage,
+          })
+        } catch (error) {
+          console.error('Error saving preferences:', error)
+        }
+      }
+      
+      // Save to localStorage as backup
       localStorage.setItem("userCountry", selectedCountry)
       localStorage.setItem("userLanguage", selectedLanguage)
       localStorage.setItem("onboardingComplete", "true")

@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { WhatsAppButton } from "@/components/whatsapp-button"
+import { AuthProvider } from "@/contexts/auth-context"
 
 export const metadata: Metadata = {
   title: "MwanAfrika - Learning Feeds the Future",
@@ -21,8 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <Suspense fallback={null}>{children}</Suspense>
-        <WhatsAppButton />
+        <AuthProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+          <WhatsAppButton />
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

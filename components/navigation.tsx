@@ -3,9 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Home, BookOpen, Gift, Users, User, MessageCircle, Sparkles, Heart, Menu, X, Settings } from "lucide-react"
+import { Home, BookOpen, Gift, Users, User, MessageCircle, Sparkles, Heart, Menu, X, Settings, LogOut } from "lucide-react"
 import { LanguageSelector } from "./language-selector"
 
 const workspaceItems = [
@@ -26,6 +27,16 @@ const accountItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const { logout, userProfile, currentUser } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      setIsOpen(false)
+    } catch (error) {
+      console.error('Error logging out:', error)
+    }
+  }
 
   return (
     <>
@@ -36,7 +47,12 @@ export function Navigation() {
             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
               <BookOpen className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold text-lg">EduFeed</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-lg">EduFeed</span>
+              {currentUser?.isAnonymous && (
+                <span className="text-xs text-muted-foreground">Guest Mode</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
@@ -135,6 +151,16 @@ export function Navigation() {
                   </Link>
                 )
               })}
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg transition-colors text-white hover:bg-white/5"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-medium">
+                  {currentUser?.isAnonymous ? "Exit Guest Mode" : "Sign Out"}
+                </span>
+              </Button>
             </nav>
           </div>
         </div>
