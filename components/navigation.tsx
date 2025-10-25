@@ -47,7 +47,7 @@ export function Navigation() {
       await logout();
       setIsOpen(false);
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
 
@@ -207,16 +207,14 @@ export function Navigation() {
             <User className="h-5 w-5 text-white" />
             <div>
               <div className="font-medium text-white">
-                {currentUser?.isAnonymous 
-                  ? "Guest User" 
-                  : currentUser?.email || "Student"
-                }
+                {currentUser?.isAnonymous
+                  ? "Guest User"
+                  : currentUser?.email || "Student"}
               </div>
               <div className="text-sm text-white/70">
-                {currentUser?.isAnonymous 
+                {currentUser?.isAnonymous
                   ? "Browsing as guest"
-                  : "Level 5 • 1,250 coins"
-                }
+                  : "Level 5 • 1,250 coins"}
               </div>
             </div>
           </div>

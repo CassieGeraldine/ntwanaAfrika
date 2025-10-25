@@ -40,7 +40,10 @@ function Dashboard() {
     // Check if onboarding is complete for authenticated users
     if (currentUser) {
       const onboardingComplete = localStorage.getItem("onboardingComplete");
-      if (!onboardingComplete && (!userProfile?.country || !userProfile?.language)) {
+      if (
+        !onboardingComplete &&
+        (!userProfile?.country || !userProfile?.language)
+      ) {
         router.push("/onboarding");
         return;
       }
@@ -144,19 +147,19 @@ function Dashboard() {
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
           {/* Guest Mode Banner */}
           <GuestModeBanner />
-          
+
           {/* Welcome Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-balance">
-                  Welcome{currentUser?.isAnonymous ? '' : ' back'}, {userProfile?.displayName || 'Learner'}! 👋
+                  Welcome{currentUser?.isAnonymous ? "" : " back"},{" "}
+                  {userProfile?.displayName || "Learner"}! 👋
                 </h1>
                 <p className="text-muted-foreground">
-                  {currentUser?.isAnonymous 
-                    ? 'Start your learning journey in guest mode!' 
-                    : 'Ready to continue your learning journey?'
-                  }
+                  {currentUser?.isAnonymous
+                    ? "Start your learning journey in guest mode!"
+                    : "Ready to continue your learning journey?"}
                 </p>
               </div>
               <div className="flex items-center gap-2 bg-destructive/10 px-3 py-2 rounded-lg">
