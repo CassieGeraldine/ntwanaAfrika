@@ -136,7 +136,7 @@ export function Navigation() {
         </div>
 
         {/* Navigation Content */}
-        <div className="flex-1 px-4">
+        <div className="flex-1 px-4 overflow-y-auto">
           {/* My Workspace Section */}
           <div className="mb-6">
             <h3 className="text-sm font-medium text-white/60 mb-3 px-2">

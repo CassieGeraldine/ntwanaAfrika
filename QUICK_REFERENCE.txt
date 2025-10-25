@@ -1,0 +1,128 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                 🎓 ntwanaAfrika Quick Reference                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+🌐 APPLICATION URL
+   http://localhost:3000
+
+📁 KEY DIRECTORIES
+   /app              → Pages and API routes
+   /components       → Reusable UI components
+   /contexts         → React contexts (auth, etc.)
+   /lib              → Utilities (firebase, ai, utils)
+   /hooks            → Custom React hooks
+   /public           → Static assets
+
+🔐 AUTHENTICATION
+   ✓ Email/Password Login & Signup
+   ✓ Google OAuth Login
+   ✓ Anonymous/Guest Mode
+   ✓ Password Reset
+   ✓ Auto-logout (Desktop & Mobile)
+
+🗺️ GOOGLE MAPS INTEGRATION
+   API Route:  /api/locations
+   Component:  components/location-finder.tsx
+   Hook:       hooks/use-google-maps.ts
+   Features:   Nearby stores, geocoding, directions
+
+🤖 AI TUTOR
+   API Route:  /api/chat
+   Library:    lib/ai.ts
+   Model:      gemini-1.5-flash
+   Features:   Subject help, step-by-step guidance
+
+🔥 FIREBASE SERVICES
+   Auth:       Email, Google OAuth, Anonymous
+   Firestore:  User profiles, progress, coins
+   Storage:    File uploads (if needed)
+   Analytics:  User behavior tracking
+
+💰 GAMIFICATION
+   Skill Coins:  Earned from lessons
+   Levels:       XP-based progression
+   Streaks:      Daily learning tracking
+   Badges:       Achievement unlocks
+
+📱 RESPONSIVE DESIGN
+   Desktop:   Sidebar navigation
+   Mobile:    Hamburger menu
+   Tablet:    Adaptive layout
+
+🌍 MULTI-LANGUAGE
+   Component: components/language-selector.tsx
+   Countries: South Africa, Zimbabwe, Kenya, Zambia, Malawi
+
+📄 MAIN PAGES
+   /                → Dashboard
+   /auth            → Login/Signup
+   /learn           → Learning modules
+   /rewards         → Rewards marketplace
+   /tutor           → AI WhatsApp tutor
+   /dreamland       → Career explorer
+   /wellness        → Mental health hub
+   /community       → Leaderboards
+   /profile         → User profile
+
+🛠️ DEVELOPMENT COMMANDS
+   npm run dev      → Start dev server
+   npm run build    → Production build
+   npm run start    → Start production server
+   npm run lint     → Run ESLint
+
+📚 DOCUMENTATION
+   README.md                      → Project overview
+   FIREBASE_SETUP.md              → Firebase guide
+   GOOGLE_MAPS_SETUP.md           → Maps API guide
+   SETUP_VERIFICATION_REPORT.md   → This setup report
+   TEAM_GUIDE.md                  → Team collaboration
+
+🔧 TROUBLESHOOTING
+   Issue: Server not starting
+   Fix:   Check if port 3000 is available
+          Kill existing process: kill $(lsof -t -i:3000)
+
+   Issue: API keys not working
+   Fix:   Verify .env.local file exists and has correct keys
+          Restart dev server after changing .env.local
+
+   Issue: Firebase auth errors
+   Fix:   Check Firebase Console → Authentication → Sign-in methods
+          Ensure authorized domains include localhost
+
+   Issue: Maps not loading
+   Fix:   Verify GOOGLE_MAPS_API_KEY in .env.local
+          Check API is enabled in Google Cloud Console
+          Ensure billing is set up for Maps API
+
+🎯 QUICK TEST CHECKLIST
+   □ Open http://localhost:3000
+   □ Create account or login
+   □ Try guest mode
+   □ Complete a lesson
+   □ Check rewards marketplace
+   □ Ask AI tutor a question
+   □ Test logout
+   □ Check mobile view (resize browser)
+
+⚡ HOT TIPS
+   • Files auto-reload on save
+   • TypeScript errors show in terminal
+   • Use Ctrl+C to stop dev server
+   • Check browser console for errors
+   • Firebase data persists across sessions
+   • Skill coins accumulate as you learn
+
+🚨 IMPORTANT REMINDERS
+   ⚠ Never commit .env.local to git
+   ⚠ Keep API keys secure
+   ⚠ Review Firebase security rules
+   ⚠ Test on mobile devices
+   ⚠ Check API quotas regularly
+
+✅ SETUP STATUS: COMPLETE
+   All systems operational!
+   Ready for development! 🚀
+
+Need help? Use GitHub Copilot or check the documentation.
+
