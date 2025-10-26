@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { AIQuiz } from "@/components/ai-quiz"
 import { CareerImageGenerator } from "@/components/career-image-generator"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +24,8 @@ import {
   Users,
   MapPin,
   Calendar,
+  Loader2,
+  ExternalLink,
 } from "lucide-react"
 
 const careerPaths = [
@@ -141,43 +144,56 @@ const explorationTopics = [
   },
 ]
 
-const communityEvents = [
-  {
-    title: "Career Fair 2024",
-    date: "March 15, 2024",
-    time: "10:00 AM - 4:00 PM",
-    location: "Ubuntu Community Center",
-    description: "Meet professionals from various fields",
-    attendees: 45,
-    type: "In-person",
-  },
-  {
-    title: "Coding Workshop",
-    date: "March 20, 2024",
-    time: "2:00 PM - 5:00 PM",
-    location: "Online",
-    description: "Learn basic programming with Python",
-    attendees: 78,
-    type: "Virtual",
-  },
-  {
-    title: "Science Fair",
-    date: "March 25, 2024",
-    time: "9:00 AM - 3:00 PM",
-    location: "Mandela High School",
-    description: "Showcase your science projects",
-    attendees: 32,
-    type: "In-person",
-  },
-]
-
 export default function Dreamland() {
+  const { userProfile, updateUserProfile } = useAuth()
   const [selectedCareer, setSelectedCareer] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [interests, setInterests] = useState<string[]>(["Science", "Technology"])
   const [showQuiz, setShowQuiz] = useState(false)
   const [imageGeneratorOpen, setImageGeneratorOpen] = useState(false)
   const [selectedCareerForImage, setSelectedCareerForImage] = useState<typeof careerPaths[0] | null>(null)
+  const [communityEvents, setCommunityEvents] = useState<any[]>([])
+  const [eventsLoading, setEventsLoading] = useState(false)
+  const [eventsError, setEventsError] = useState<string | null>(null)
+
+  // Load user interests from profile
+  useEffect(() => {
+    if (userProfile?.preferences?.interests) {
+      setInterests(userProfile.preferences.interests)
+    }
+  }, [userProfile])
+
+  // Fetch real-time events when interests or location changes
+  useEffect(() => {
+    fetchMeetupEvents()
+  }, [interests, userProfile?.country])
+
+  const fetchMeetupEvents = async () => {
+    setEventsLoading(true)
+    setEventsError(null)
+    
+    try {
+      const location = userProfile?.country || 'South Africa'
+      const interestsQuery = interests.join(',')
+      
+      const response = await fetch(
+        `/api/meetup-events?interests=${encodeURIComponent(interestsQuery)}&location=${encodeURIComponent(location)}`
+      )
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setCommunityEvents(data.events)
+      } else {
+        setEventsError('Failed to load events')
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error)
+      setEventsError('Failed to load events')
+    } finally {
+      setEventsLoading(false)
+    }
+  }
 
   const filteredCareers = careerPaths.filter(
     (career) =>
@@ -186,14 +202,44 @@ export default function Dreamland() {
       career.subjects.some((subject) => subject.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
-  const addInterest = (interest: string) => {
+  const addInterest = async (interest: string) => {
     if (!interests.includes(interest)) {
-      setInterests([...interests, interest])
+      const newInterests = [...interests, interest]
+      setInterests(newInterests)
+      
+      // Save to user profile if authenticated
+      if (userProfile && updateUserProfile) {
+        try {
+          await updateUserProfile({
+            preferences: {
+              ...userProfile.preferences,
+              interests: newInterests
+            }
+          })
+        } catch (error) {
+          console.error('Error saving interest:', error)
+        }
+      }
     }
   }
 
-  const removeInterest = (interest: string) => {
-    setInterests(interests.filter((i) => i !== interest))
+  const removeInterest = async (interest: string) => {
+    const newInterests = interests.filter((i) => i !== interest)
+    setInterests(newInterests)
+    
+    // Save to user profile if authenticated
+    if (userProfile && updateUserProfile) {
+      try {
+        await updateUserProfile({
+          preferences: {
+            ...userProfile.preferences,
+            interests: newInterests
+          }
+        })
+      } catch (error) {
+        console.error('Error removing interest:', error)
+      }
+    }
   }
 
   return (
@@ -392,39 +438,116 @@ export default function Dreamland() {
             {/* Community Events */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Upcoming Events
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Upcoming Events
+                  </CardTitle>
+                  {eventsLoading && (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Based on your interests: {interests.join(', ')}
+                </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {communityEvents.map((event, index) => (
-                  <div key={index} className="p-3 rounded-lg border bg-muted/30">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-sm">{event.title}</h4>
-                      <Badge variant={event.type === "Virtual" ? "secondary" : "default"} className="text-xs">
-                        {event.type}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3">{event.description}</p>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span>
-                          {event.date} at {event.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span>{event.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        <span>{event.attendees} attending</span>
-                      </div>
-                    </div>
+                {eventsLoading ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Finding events for you...</p>
                   </div>
-                ))}
+                ) : eventsError ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-destructive mb-2">{eventsError}</p>
+                    <Button size="sm" variant="outline" onClick={fetchMeetupEvents}>
+                      Try Again
+                    </Button>
+                  </div>
+                ) : communityEvents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground">No events found for your interests</p>
+                    <p className="text-xs text-muted-foreground mt-1">Try adding more interests above</p>
+                  </div>
+                ) : (
+                  communityEvents.slice(0, 6).map((event, index) => {
+                    const eventDate = new Date(event.dateTime)
+                    const endTime = new Date(event.endTime)
+                    const formattedDate = eventDate.toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })
+                    const formattedTime = eventDate.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })
+                    const formattedEndTime = endTime.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })
+
+                    return (
+                      <div key={event.id || index} className="p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {event.emoji && <span className="text-lg">{event.emoji}</span>}
+                            <h4 className="font-medium text-sm">{event.title}</h4>
+                          </div>
+                          <Badge variant={event.type === "Virtual" ? "secondary" : "default"} className="text-xs">
+                            {event.type}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{event.description}</p>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span>
+                              {formattedDate} at {formattedTime} - {formattedEndTime}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span className="truncate">
+                              {event.venue?.name || event.venue?.city || 'Online'}
+                              {event.venue?.city && `, ${event.venue.city}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-3 w-3 text-muted-foreground" />
+                              <span>{event.going} attending</span>
+                            </div>
+                            {event.eventUrl && (
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => window.open(event.eventUrl, '_blank')}
+                              >
+                                View <ExternalLink className="h-3 w-3 ml-1" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+                {!eventsLoading && !eventsError && communityEvents.length > 6 && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      // Show all events or navigate to events page
+                    }}
+                  >
+                    View All {communityEvents.length} Events
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

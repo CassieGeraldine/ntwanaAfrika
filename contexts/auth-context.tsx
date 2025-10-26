@@ -68,6 +68,12 @@ interface UserProfile {
     redeemedAt: string;
     status: 'pending' | 'collected' | 'expired';
   }>;
+  // User Preferences
+  preferences?: {
+    interests?: string[];
+    careerGoals?: string[];
+    learningStyle?: string;
+  };
 }
 
 interface AuthContextType {
