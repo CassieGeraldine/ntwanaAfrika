@@ -20,6 +20,9 @@ interface UserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
+  firstName?: string;
+  lastName?: string;
+  photoURL?: string;
   country?: string;
   language?: string;
   school?: string;
@@ -30,6 +33,9 @@ interface UserProfile {
   joinDate: string;
   totalLessonsCompleted: number;
   badges: string[];
+  rank?: string | number;
+  dailyQuests?: any[];
+  subjectProgress?: any[];
 }
 
 interface AuthContextType {

@@ -48,12 +48,19 @@ function Dashboard() {
   const skillCoins = userProfile.skillCoins;
   const currentStreak = userProfile.streak;
   const totalLessonsCompleted = userProfile.totalLessonsCompleted;
-  const badges = userProfile.badges || [];
+  const userBadges = userProfile.badges || [];
   const rank = userProfile.rank || "-";
   const dailyQuests = userProfile.dailyQuests || [];
   const subjectProgress = userProfile.subjectProgress || [];
 
   const levelProgress = Math.min((skillCoins % 1000) / 10, 100);
+
+  // Mock badge details for display (in future, this would come from a badges database)
+  const recentBadges = [
+    { name: "Math Master", icon: "🧮", earned: "Today", rarity: "gold" },
+    { name: "Reading Star", icon: "📚", earned: "Yesterday", rarity: "silver" },
+    { name: "Science Explorer", icon: "🔬", earned: "2 days ago", rarity: "bronze" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,7 +77,7 @@ function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-balance">
-                  Welcome back, {userProfile.displayName || "Learner"}! 👋
+                  Welcome back, {userProfile.firstName || userProfile.displayName || "Learner"}! 👋
                 </h1>
                 <p className="text-muted-foreground">
                   Ready to continue your learning journey?
@@ -164,7 +171,7 @@ function Dashboard() {
                   <Star className="h-5 w-5 text-secondary" />
                   <span className="text-sm font-medium">Badges</span>
                 </div>
-                <div className="text-2xl font-bold">{badges.length}</div>
+                <div className="text-2xl font-bold">{userBadges.length}</div>
                 <span className="text-xs text-muted-foreground">earned</span>
               </CardContent>
             </Card>
@@ -197,7 +204,7 @@ function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {dailyQuests.map((quest) => (
+                {dailyQuests.map((quest: any) => (
                   <div
                     key={quest.id}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
@@ -242,7 +249,7 @@ function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {subjectProgress.map((subject) => (
+                {subjectProgress.map((subject: any) => (
                   <div
                     key={subject.name}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -279,7 +286,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {badges.map((badge, index) => (
+                {recentBadges.map((badge: any, index: number) => (
                   <div
                     key={index}
                     className="flex-shrink-0 text-center p-4 rounded-lg border bg-gradient-to-b from-muted/30 to-muted/50 min-w-[120px] hover:shadow-md transition-shadow"
