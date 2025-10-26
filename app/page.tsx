@@ -154,7 +154,7 @@ function Dashboard() {
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-balance">
                   Welcome{currentUser?.isAnonymous ? "" : " back"},{" "}
-                  {userProfile?.displayName || "Learner"}! 👋
+                  {userProfile?.firstName || userProfile?.displayName || "Learner"}! 👋
                 </h1>
                 <p className="text-muted-foreground">
                   {currentUser?.isAnonymous

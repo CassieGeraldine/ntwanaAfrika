@@ -20,6 +20,9 @@ interface UserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
+  firstName?: string;
+  lastName?: string;
+  photoURL?: string;
   country?: string;
   language?: string;
   school?: string;
@@ -40,7 +43,8 @@ interface AuthContextType {
   signup: (
     email: string,
     password: string,
-    displayName: string
+    firstName: string,
+    lastName: string
   ) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -116,13 +120,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (
     email: string,
     password: string,
-    displayName: string
+    firstName: string,
+    lastName: string
   ) => {
     const { user } = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
+    const displayName = `${firstName} ${lastName}`.trim();
     await updateProfile(user, { displayName });
 
     // Create user profile in Firestore
@@ -130,6 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       uid: user.uid,
       email: user.email,
       displayName,
+      firstName,
+      lastName,
       level: 1,
       skillCoins: 0,
       streak: 0,
@@ -150,7 +158,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    const { user } = await signInWithPopup(auth, provider);
+
+    // Extract first name and last name from Google displayName
+    const displayName = user.displayName || "";
+    const nameParts = displayName.split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    // Check if user profile exists in Firestore
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+    if (!userDoc.exists()) {
+      // Create new user profile for first-time Google sign-in
+      const userProfile: UserProfile = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        firstName,
+        lastName,
+        photoURL: user.photoURL || undefined,
+        level: 1,
+        skillCoins: 0,
+        streak: 0,
+        joinDate: new Date().toISOString(),
+        totalLessonsCompleted: 0,
+        badges: [],
+      };
+      await setDoc(doc(db, "users", user.uid), userProfile);
+      setUserProfile(userProfile);
+    } else {
+      // Update existing profile with Google info if needed
+      const existingProfile = userDoc.data() as UserProfile;
+      if (!existingProfile.firstName || !existingProfile.lastName) {
+        await updateDoc(doc(db, "users", user.uid), {
+          firstName,
+          lastName,
+          photoURL: user.photoURL || undefined,
+        });
+      }
+      await loadUserProfile(user.uid);
+    }
   };
 
   const loginAnonymously = async () => {

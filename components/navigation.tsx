@@ -209,12 +209,14 @@ export function Navigation() {
               <div className="font-medium text-white">
                 {currentUser?.isAnonymous
                   ? "Guest User"
-                  : currentUser?.email || "Student"}
+                  : userProfile?.firstName
+                  ? `${userProfile.firstName} ${userProfile.lastName || ""}`
+                  : userProfile?.displayName || currentUser?.email || "Student"}
               </div>
               <div className="text-sm text-white/70">
                 {currentUser?.isAnonymous
                   ? "Browsing as guest"
-                  : "Level 5 • 1,250 coins"}
+                  : `Level ${userProfile?.level || 1} • ${userProfile?.skillCoins || 0} coins`}
               </div>
             </div>
           </div>
