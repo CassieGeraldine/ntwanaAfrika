@@ -450,6 +450,14 @@ export default function Dreamland() {
                 <p className="text-xs text-muted-foreground mt-1">
                   Based on your interests: {interests.join(', ')}
                 </p>
+                {!eventsLoading && communityEvents.length > 0 && communityEvents[0]?.isMockData && (
+                  <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                      <Sparkles className="h-3 w-3" />
+                      <span>Showing sample events. Click "Search" to find real events on Meetup.</span>
+                    </p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 {eventsLoading ? (
@@ -528,10 +536,15 @@ export default function Dreamland() {
                                 className="h-6 px-2 text-xs"
                                 onClick={() => window.open(event.eventUrl, '_blank')}
                               >
-                                View <ExternalLink className="h-3 w-3 ml-1" />
+                                {event.isMockData ? 'Search' : 'View'} <ExternalLink className="h-3 w-3 ml-1" />
                               </Button>
                             )}
                           </div>
+                          {event.isMockData && (
+                            <p className="text-[10px] text-muted-foreground italic mt-1">
+                              💡 Sample event - Click to search for real events
+                            </p>
+                          )}
                         </div>
                       </div>
                     )

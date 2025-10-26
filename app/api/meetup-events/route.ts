@@ -150,10 +150,12 @@ function generateMockEvents(interests: string, location: string) {
         urlname: `${interest.toLowerCase()}-${city.toLowerCase()}`
       },
       going: going,
-      eventUrl: `https://www.meetup.com/${interest.toLowerCase()}-events`,
+      // Use generic Meetup search URL instead of fake group URL
+      eventUrl: `https://www.meetup.com/find/?keywords=${encodeURIComponent(interest)}&location=${encodeURIComponent(city + ', South Africa')}`,
       imageUrl: null,
       type: Math.random() > 0.3 ? 'In-person' : 'Virtual',
-      emoji: eventType.emoji
+      emoji: eventType.emoji,
+      isMockData: true // Flag to indicate this is mock data
     });
   }
 
