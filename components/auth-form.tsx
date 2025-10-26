@@ -30,7 +30,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
   // Signup form state
   const [signupData, setSignupData] = useState({
-    displayName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -69,7 +70,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     }
 
     try {
-      await signup(signupData.email, signupData.password, signupData.displayName)
+      await signup(signupData.email, signupData.password, signupData.firstName, signupData.lastName)
       onSuccess?.()
     } catch (error: any) {
       setError(error.message || 'Failed to create account')
@@ -221,19 +222,37 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
           <TabsContent value="signup" className="space-y-4">
             <form onSubmit={handleSignup} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={signupData.displayName}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, displayName: e.target.value }))}
-                    className="pl-10"
-                    required
-                  />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-firstname">First Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="signup-firstname"
+                      type="text"
+                      placeholder="First name"
+                      value={signupData.firstName}
+                      onChange={(e) => setSignupData(prev => ({ ...prev, firstName: e.target.value }))}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-lastname">Last Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="signup-lastname"
+                      type="text"
+                      placeholder="Last name"
+                      value={signupData.lastName}
+                      onChange={(e) => setSignupData(prev => ({ ...prev, lastName: e.target.value }))}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
