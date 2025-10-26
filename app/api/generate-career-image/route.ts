@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
         const mimeType = imageFile.type
 
         const genAI = new GoogleGenerativeAI(geminiApiKey)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
         const analysisPrompt = `Analyze this person's photo and create a detailed, professional image generation prompt for visualizing them as a ${careerTitle} in the South African context.
 

@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing GOOGLE_API_KEY (or GEMINI_API_KEY) in environment." }, { status: 500 })
     }
 
-    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash"
+    const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash"
 
     const genAI = new GoogleGenerativeAI(apiKey)
 

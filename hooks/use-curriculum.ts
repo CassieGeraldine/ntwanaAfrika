@@ -63,9 +63,10 @@ export function useCurriculum() {
 
   const generateLesson = async (
     subject: string,
-    level: string,
     topic: string,
-    lessonType: string = 'interactive'
+    level: string = 'primary',
+    learningStyle: string = 'Standard',
+    systemInstruction?: string
   ): Promise<LessonContent> => {
     setIsLoading(true)
     setError(null)
@@ -76,7 +77,7 @@ export function useCurriculum() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subject, level, topic, lessonType }),
+        body: JSON.stringify({ subject, level, topic, learningStyle, systemInstruction }),
       })
 
       if (!response.ok) {

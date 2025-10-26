@@ -29,6 +29,8 @@ import {
   Sparkles,
   ArrowLeft,
   RotateCcw,
+  Volume2,
+  Palette,
 } from "lucide-react"
 import { useCurriculum, type LessonContent, type CurriculumTopic } from "@/hooks/use-curriculum"
 import { ProtectedRoute } from "@/components/protected-route"
@@ -97,57 +99,17 @@ const subjects = [
   },
 ]
 
-const featuredLessons = [
-  {
-    id: 1,
-    title: "Fractions and Decimals",
-    subject: "Mathematics",
-    duration: "15 min",
-    difficulty: "Intermediate",
-    reward: 50,
-    completed: false,
-    locked: false,
-    description: "Learn to work with parts of whole numbers",
-  },
-  {
-    id: 2,
-    title: "African Folk Tales",
-    subject: "Reading",
-    duration: "20 min",
-    difficulty: "Beginner",
-    reward: 40,
-    completed: true,
-    locked: false,
-    description: "Explore traditional stories from across Africa",
-  },
-  {
-    id: 3,
-    title: "Water Cycle",
-    subject: "Science",
-    duration: "12 min",
-    difficulty: "Intermediate",
-    reward: 45,
-    completed: false,
-    locked: false,
-    description: "Discover how water moves through our environment",
-  },
-  {
-    id: 4,
-    title: "Healthy Eating",
-    subject: "Life Skills",
-    duration: "10 min",
-    difficulty: "Beginner",
-    reward: 35,
-    completed: false,
-    locked: true,
-    description: "Learn about nutrition and balanced meals",
-  },
-]
-
 const achievements = [
   { name: "Quick Learner", description: "Complete 3 lessons in one day", progress: 2, total: 3 },
   { name: "Math Wizard", description: "Score 100% on 5 math quizzes", progress: 3, total: 5 },
   { name: "Bookworm", description: "Read 10 stories", progress: 7, total: 10 },
+]
+
+const learningModes = [
+  { name: 'Standard', icon: BookOpen, description: 'Default text and visual-based learning.' },
+  { name: 'Auditory/Blind', icon: Volume2, description: 'Highly descriptive content optimized for screen readers and listening. (Blind/Visually Impaired)' },
+  { name: 'Dyslexia-Friendly', icon: Palette, description: 'Simplified language and clear structure. (Dyslexia/Cognitive)' },
+  { name: 'ADHD/Kinesthetic', icon: Zap, description: 'Short, engaging chunks with mental exercises and activities. (ADHD/Kinesthetic)' },
 ]
 
 export default function Learn() {
@@ -155,6 +117,7 @@ export default function Learn() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
   const [currentLesson, setCurrentLesson] = useState<any>(null)
   const [loadingLesson, setLoadingLesson] = useState(false)
+  const [selectedMode, setSelectedMode] = useState<string>('Standard')
   
   const {
     getSubjectTopics,
@@ -184,6 +147,19 @@ export default function Learn() {
       default:
         return "text-muted-foreground border-border bg-muted/10"
     }
+  }
+
+  const getModeStyle = () => {
+    if (selectedMode === 'Dyslexia-Friendly') {
+      return {
+        fontFamily: 'Open Dyslexic, sans-serif',
+        lineHeight: 1.8,
+        letterSpacing: '0.1em',
+        backgroundColor: '#FFFFEE',
+        color: '#333',
+      }
+    }
+    return {}
   }
 
   const handleSubjectSelect = async (subjectId: string) => {
@@ -216,7 +192,7 @@ export default function Learn() {
     setLoadingLesson(true)
     
     try {
-      const lesson = await generateLesson(selectedSubject!, topic, 'primary', 'Beginner')
+      const lesson = await generateLesson(selectedSubject!, topic, 'primary', selectedMode)
       setCurrentLesson(lesson)
     } catch (error) {
       console.error('Failed to generate lesson:', error)
@@ -268,6 +244,61 @@ export default function Learn() {
     return { totalCompleted, totalScore, highScores, avgScore }
   }
 
+  const getSystemInstruction = (mode: string) => {
+    switch (mode) {
+      case 'Auditory/Blind':
+        return "You are a detailed, descriptive auditory tutor. Provide a step-by-step, highly clear, and detailed explanation suitable for someone listening to a screen reader. Avoid complex visual jargon and use concrete language. Structure the content with clear headings and enumerated lists for easy navigation.";
+      case 'Dyslexia-Friendly':
+        return "You are a clear and concise tutor. Use short sentences, simple vocabulary (Grade 5 reading level), and break the content into very short paragraphs. Maintain a highly organized, bulleted list or short section format. Focus on one core concept at a time.";
+      case 'ADHD/Kinesthetic':
+        return "You are an energetic and engaging activity guide. Deliver the lesson in highly focused, action-oriented chunks. Every 1-2 paragraphs, include a 'Quick Challenge' or 'Do This Now' section that requires mental or physical participation to maintain engagement. Keep the tone lively.";
+      case 'Standard':
+      default:
+        return "You are a friendly, expert tutor. Generate an educational lesson about the following topic.";
+    }
+  };
+
+  // Dynamic featured lessons state
+  const [featuredLessons, setFeaturedLessons] = useState<any[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(false);
+
+  useEffect(() => {
+    async function fetchFeaturedLessons() {
+      setLoadingFeatured(true);
+      try {
+        // Example: fetch topics for all subjects, then generate lessons for each
+        const systemInstruction = getSystemInstruction(selectedMode);
+        const lessons: any[] = [];
+        for (const subject of subjects) {
+          const curriculum = await getSubjectTopics(subject.id);
+          const topics = curriculum.topics.slice(0, 1); // Just one featured topic per subject for demo
+          for (const topic of topics) {
+            const lesson = await generateLesson(subject.id, topic.title, 'primary', selectedMode, systemInstruction);
+            lessons.push({
+              id: `${subject.id}_${topic.title}`,
+              title: lesson.title || topic.title,
+              subject: subject.name,
+              duration: lesson.duration || '10 min',
+              difficulty: lesson.difficulty || subject.difficulty,
+              reward: lesson.reward || 30,
+              completed: !!progressData[subject.id]?.[topic.title],
+              locked: false, // Add logic if needed
+              description: lesson.description || '',
+              contentTypes: lesson.contentTypes || [],
+            });
+          }
+        }
+        setFeaturedLessons(lessons);
+      } catch (err) {
+        setFeaturedLessons([]);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    }
+    fetchFeaturedLessons();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMode, progressData]);
+
   // If showing a lesson
   if (currentLesson) {
     return (
@@ -283,10 +314,19 @@ export default function Learn() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Topics
             </Button>
-            <InteractiveLesson 
-              lesson={currentLesson}
-              onComplete={handleLessonComplete}
-            />
+            <div className="flex items-center space-x-2 mb-6 p-3 bg-accent/20 border-l-4 border-accent rounded-lg">
+              <Target className="w-5 h-5 text-accent" />
+              <p className="text-sm font-medium">
+                Viewing content in <span className="font-semibold">{selectedMode} Mode</span> optimized for your learning style.
+              </p>
+            </div>
+            <div style={getModeStyle()}>
+              <InteractiveLesson 
+                lesson={currentLesson}
+                onComplete={handleLessonComplete}
+                selectedMode={selectedMode}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -309,6 +349,31 @@ export default function Learn() {
                   : 'Choose your subject and start earning Skill Coins!'
                 }
               </p>
+            </div>
+
+            {/* Learning Mode Selector */}
+            <div className="my-8">
+              <h3 className="text-xl font-semibold mb-4">Choose Your Learning Mode (Accessibility Settings)</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {learningModes.map(mode => {
+                  const Icon = mode.icon
+                  return (
+                    <button
+                      key={mode.name}
+                      onClick={() => setSelectedMode(mode.name)}
+                      className={`p-4 rounded-xl text-left transition duration-200 shadow-md border-2 ${
+                        selectedMode === mode.name
+                          ? 'border-accent bg-accent/10 ring-2 ring-accent'
+                          : 'border-border bg-white hover:border-muted'
+                      }`}
+                    >
+                      <Icon className={`w-6 h-6 mb-2 ${selectedMode === mode.name ? 'text-accent' : 'text-muted-foreground'}`} />
+                      <p className="font-bold text-sm">{mode.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{mode.description}</p>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             {/* Navigation breadcrumbs */}
@@ -550,6 +615,74 @@ export default function Learn() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Render dynamic featured lessons */}
+            {!selectedSubject && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Featured Lessons</h2>
+                {loadingFeatured ? (
+                  <div className="text-muted-foreground">Loading featured lessons...</div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {featuredLessons.map((lesson) => (
+                      <Card key={lesson.id} className="transition-all hover:shadow-lg">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-lg bg-muted/10">
+                              {/* Find subject icon */}
+                              {(() => {
+                                const subject = subjects.find(s => s.name === lesson.subject);
+                                if (subject) {
+                                  const Icon = subject.icon;
+                                  return <Icon className={`h-6 w-6 ${subject.color}`} />;
+                                }
+                                return null;
+                              })()}
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-lg">{lesson.title}</CardTitle>
+                              <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
+                                {lesson.difficulty}
+                              </Badge>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{lesson.description}</p>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Reward</span>
+                              <span className="font-medium">{lesson.reward} Skill Coins</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">
+                                {lesson.completed ? 'Completed' : 'Ready to learn'}
+                              </span>
+                              <Button size="sm" disabled={lesson.locked}>
+                                {lesson.completed ? (
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                ) : (
+                                  <Play className="h-4 w-4 mr-1" />
+                                )}
+                                {lesson.completed ? 'Retry' : 'Start'}
+                              </Button>
+                            </div>
+                            {/* Show content types if available */}
+                            {lesson.contentTypes && lesson.contentTypes.length > 0 && (
+                              <div className="flex gap-2 mt-2">
+                                {lesson.contentTypes.map((type: string, idx: number) => (
+                                  <Badge key={idx} variant="secondary">{type}</Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

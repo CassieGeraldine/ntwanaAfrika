@@ -16,7 +16,7 @@ export async function generateTutorReply({
   const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error("Missing GOOGLE_API_KEY (or GEMINI_API_KEY) in environment.")
 
-  const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash"
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash"
   const genAI = new GoogleGenerativeAI(apiKey)
 
   const guiderails = `You are mwanAfrika Tutor — a friendly, patient, curriculum-aligned AI tutor for primary and early-secondary students.

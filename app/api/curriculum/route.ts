@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 
 export async function POST(req: Request) {
   try {
-    const { subject, level, topic, lessonType } = await req.json()
+    const { subject, level, topic, lessonType, learningStyle, systemInstruction } = await req.json()
 
     const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY
     if (!apiKey) {
@@ -11,16 +11,28 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }) // Use a supported model
+
+    // Build extra requirements based on learningStyle
+    let styleRequirements = ""
+    if (learningStyle === "Auditory/Blind") {
+      styleRequirements = `\n- Structure lesson for auditory learners and screen readers\n- Include a narrated audio version (base64 mp3 or TTS text)\n- Avoid complex visual jargon\n- Use clear headings and enumerated lists`;
+    } else if (learningStyle === "Dyslexia-Friendly") {
+      styleRequirements = `\n- Use visuals: flashcards, simple diagrams, or video links\n- Use dyslexia-friendly fonts and colors\n- Break content into short, clear sections`;
+    } else if (learningStyle === "ADHD/Kinesthetic") {
+      styleRequirements = `\n- Keep lessons short and concise\n- Use action-oriented, interactive chunks\n- Include frequent 'Quick Challenge' or 'Do This Now' activities`;
+    }
 
     // Define curriculum prompts based on African education context
-    const curriculumPrompt = `You are an expert curriculum designer for African primary and secondary education. 
+    const curriculumPrompt = `${systemInstruction || "You are an expert curriculum designer for African primary and secondary education."}
     Create engaging, culturally relevant lesson content for underprivileged students.
 
     Subject: ${subject}
     Level: ${level} (Primary/Secondary)
     Topic: ${topic}
     Lesson Type: ${lessonType}
+    Learning Style: ${learningStyle}
+    ${styleRequirements}
 
     Requirements:
     - Use African contexts, examples, and cultural references
@@ -63,7 +75,7 @@ export async function POST(req: Request) {
           {
             "type": "multiple-choice|fill-blank|practical",
             "question": "Question text",
-            "options": ["A", "B", "C", "D"] // for multiple choice
+            "options": ["A", "B", "C", "D"],
             "correctAnswer": "Correct answer",
             "explanation": "Why this is correct",
             "contextualHint": "African context hint"
@@ -77,7 +89,9 @@ export async function POST(req: Request) {
         "summary": {
           "keyPoints": ["Key point 1", "Key point 2"],
           "nextSteps": "What to learn next"
-        }
+        },
+        "audioNarration": "Base64 mp3 or TTS text if auditory mode",
+        "visuals": ["flashcard image url", "video url", "drawing url"]
       }
     }
 
@@ -126,7 +140,7 @@ export async function GET(req: Request) {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
     const topicsPrompt = `Generate a comprehensive list of topics for ${subject} at ${level} level, 
     suitable for African students (South Africa, Kenya, Zimbabwe, Zambia, Malawi).
