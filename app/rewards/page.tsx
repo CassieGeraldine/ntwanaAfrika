@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/dialog"
 import { Coins, Gift, Smartphone, Utensils, Droplets, Star, Clock, CheckCircle, Copy, ExternalLink, MapPin } from "lucide-react"
 import type { NearbyStore } from "@/hooks/use-google-maps"
-
-const userCoins = 2450
+import { ProtectedRoute } from "@/components/protected-route"
+import { useUserData } from "@/hooks/use-user-data"
 
 const voucherCategories = [
   {
@@ -159,13 +159,6 @@ const recentRedemptions = [
   },
 ]
 
-const milestones = [
-  { coins: 500, reward: "Bronze Badge", achieved: true },
-  { coins: 1000, reward: "Silver Badge", achieved: true },
-  { coins: 2500, reward: "Gold Badge", achieved: false, progress: (userCoins / 2500) * 100 },
-  { coins: 5000, reward: "Platinum Badge", achieved: false, progress: (userCoins / 5000) * 100 },
-]
-
 export default function Rewards() {
   const [selectedCategory, setSelectedCategory] = useState("food")
   const [selectedItem, setSelectedItem] = useState<any>(null)
@@ -174,8 +167,27 @@ export default function Rewards() {
   const [selectedStore, setSelectedStore] = useState<NearbyStore | null>(null)
   const [redemptionCode, setRedemptionCode] = useState("")
 
+  const { userProfile, spendCoins } = useUserData()
+
+  if (!userProfile) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  const milestones = [
+    { coins: 500, reward: "Bronze Badge", achieved: userProfile.skillCoins >= 500 },
+    { coins: 1000, reward: "Silver Badge", achieved: userProfile.skillCoins >= 1000 },
+    { coins: 2500, reward: "Gold Badge", achieved: userProfile.skillCoins >= 2500, progress: (userProfile.skillCoins / 2500) * 100 },
+    { coins: 5000, reward: "Platinum Badge", achieved: userProfile.skillCoins >= 5000, progress: (userProfile.skillCoins / 5000) * 100 },
+  ]
+
   const handleRedeem = (item: any) => {
-    if (userCoins >= item.cost) {
+    if (userProfile.skillCoins >= item.cost) {
       setSelectedItem(item)
       setShowLocationFinder(true)
     }
@@ -202,297 +214,299 @@ export default function Rewards() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Navigation />
 
-      <div className="md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0">
-        <div className="p-4 md:p-6 max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Rewards Store</h1>
-            <p className="text-muted-foreground">Exchange your Skill Coins for real rewards!</p>
-          </div>
+        <div className="md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0">
+          <div className="p-4 md:p-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">Rewards Store</h1>
+              <p className="text-muted-foreground">Exchange your Skill Coins for real rewards!</p>
+            </div>
 
-          {/* Coin Balance */}
-          <Card className="mb-6 bg-gradient-to-r from-secondary/20 to-accent/20 border-secondary/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center">
-                    <Coins className="h-8 w-8 text-secondary-foreground" />
+            {/* Coin Balance */}
+            <Card className="mb-6 bg-gradient-to-r from-secondary/20 to-accent/20 border-secondary/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center">
+                      <Coins className="h-8 w-8 text-secondary-foreground" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">{userProfile.skillCoins?.toLocaleString() ?? '0'} Skill Coins</h2>
+                      <p className="text-muted-foreground">Available for redemption</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{userCoins.toLocaleString()} Skill Coins</h2>
-                    <p className="text-muted-foreground">Available for redemption</p>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2 text-accent">
+                      <Star className="h-5 w-5" />
+                      <span className="font-medium">+250 earned today</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Keep learning to earn more!</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-2 text-accent">
-                    <Star className="h-5 w-5" />
-                    <span className="font-medium">+250 earned today</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Keep learning to earn more!</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              {voucherCategories.map((category) => {
-                const Icon = category.icon
-                return (
-                  <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{category.name}</span>
-                  </TabsTrigger>
-                )
-              })}
-            </TabsList>
+            <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                {voucherCategories.map((category) => {
+                  const Icon = category.icon
+                  return (
+                    <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" />
+                      <span className="hidden sm:inline">{category.name}</span>
+                    </TabsTrigger>
+                  )
+                })}
+              </TabsList>
 
-            {voucherCategories.map((category) => (
-              <TabsContent key={category.id} value={category.id}>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {category.items.map((item) => {
-                    const canAfford = userCoins >= item.cost
-                    return (
-                      <Card
-                        key={item.id}
-                        className={`hover:shadow-md transition-shadow ${!canAfford ? "opacity-60" : ""}`}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <CardTitle className="text-lg">{item.name}</CardTitle>
-                              <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-                            </div>
-                            <Badge
-                              variant={item.availability === "Available" ? "default" : "secondary"}
-                              className={
-                                item.availability === "Available"
-                                  ? "bg-accent text-accent-foreground"
-                                  : "bg-secondary text-secondary-foreground"
-                              }
-                            >
-                              {item.availability}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex justify-center">
-                            <img
-                              src={item.image || "/placeholder.svg"}
-                              alt={item.name}
-                              className="w-24 h-24 object-cover rounded-lg border"
-                            />
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Coins className="h-4 w-4 text-secondary" />
-                                <span className="font-bold text-lg">{item.cost}</span>
+              {voucherCategories.map((category) => (
+                <TabsContent key={category.id} value={category.id}>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {category.items.map((item) => {
+                      const canAfford = userProfile.skillCoins >= item.cost
+                      return (
+                        <Card
+                          key={item.id}
+                          className={`hover:shadow-md transition-shadow ${!canAfford ? "opacity-60" : ""}`}
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <CardTitle className="text-lg">{item.name}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                               </div>
-                              <span className="text-sm text-muted-foreground">by {item.partner}</span>
+                              <Badge
+                                variant={item.availability === "Available" ? "default" : "secondary"}
+                                className={
+                                  item.availability === "Available"
+                                    ? "bg-accent text-accent-foreground"
+                                    : "bg-secondary text-secondary-foreground"
+                                }
+                              >
+                                {item.availability}
+                              </Badge>
                             </div>
-                            <Button
-                              onClick={() => handleRedeem(item)}
-                              disabled={!canAfford || item.availability !== "Available"}
-                              className="w-full"
-                              variant={canAfford ? "default" : "outline"}
-                            >
-                              {!canAfford ? (
-                                <>
-                                  <Coins className="h-4 w-4 mr-2" />
-                                  Need {item.cost - userCoins} more coins
-                                </>
-                              ) : (
-                                <>
-                                  <Gift className="h-4 w-4 mr-2" />
-                                  Redeem Now
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-
-          <div className="grid md:grid-cols-2 gap-6 mt-8">
-            {/* Recent Redemptions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Recent Redemptions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {recentRedemptions.map((redemption) => (
-                  <div key={redemption.id} className="flex items-center gap-3 p-3 rounded-lg border">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{redemption.item}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>{redemption.date}</span>
-                        <span>Code: {redemption.code}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 text-secondary text-sm">
-                        <Coins className="h-3 w-3" />
-                        <span>{redemption.cost}</span>
-                      </div>
-                      <Badge
-                        variant={redemption.status === "Ready for pickup" ? "default" : "secondary"}
-                        className="text-xs"
-                      >
-                        {redemption.status}
-                      </Badge>
-                    </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="flex justify-center">
+                              <img
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name}
+                                className="w-24 h-24 object-cover rounded-lg border"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Coins className="h-4 w-4 text-secondary" />
+                                  <span className="font-bold text-lg">{item.cost}</span>
+                                </div>
+                                <span className="text-sm text-muted-foreground">by {item.partner}</span>
+                              </div>
+                              <Button
+                                onClick={() => handleRedeem(item)}
+                                disabled={!canAfford || item.availability !== "Available"}
+                                className="w-full"
+                                variant={canAfford ? "default" : "outline"}
+                              >
+                                {!canAfford ? (
+                                  <>
+                                    <Coins className="h-4 w-4 mr-2" />
+                                    Need {item.cost - userProfile.skillCoins} more coins
+                                  </>
+                                ) : (
+                                  <>
+                                    <Gift className="h-4 w-4 mr-2" />
+                                    Redeem Now
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                </TabsContent>
+              ))}
+            </Tabs>
 
-            {/* Milestones */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-secondary" />
-                  Coin Milestones
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {milestones.map((milestone, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{milestone.reward}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{milestone.coins} coins</span>
-                        {milestone.achieved && <CheckCircle className="h-4 w-4 text-accent" />}
+            <div className="grid md:grid-cols-2 gap-6 mt-8">
+              {/* Recent Redemptions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    Recent Redemptions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {recentRedemptions.map((redemption) => (
+                    <div key={redemption.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{redemption.item}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{redemption.date}</span>
+                          <span>Code: {redemption.code}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-secondary text-sm">
+                          <Coins className="h-3 w-3" />
+                          <span>{redemption.cost}</span>
+                        </div>
+                        <Badge
+                          variant={redemption.status === "Ready for pickup" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {redemption.status}
+                        </Badge>
                       </div>
                     </div>
-                    {!milestone.achieved && (
-                      <div className="space-y-1">
-                        <Progress value={milestone.progress} className="h-2" />
-                        <p className="text-xs text-muted-foreground">{milestone.coins - userCoins} coins to go</p>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Milestones */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="h-5 w-5 text-secondary" />
+                    Coin Milestones
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {milestones.map((milestone, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{milestone.reward}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">{milestone.coins} coins</span>
+                          {milestone.achieved && <CheckCircle className="h-4 w-4 text-accent" />}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                      {!milestone.achieved && (
+                        <div className="space-y-1">
+                          <Progress value={milestone.progress} className="h-2" />
+                          <p className="text-xs text-muted-foreground">{milestone.coins - userProfile.skillCoins} coins to go</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Enhanced Redemption Dialog */}
-      <Dialog open={showRedemptionDialog} onOpenChange={setShowRedemptionDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-accent" />
-              Redemption Successful!
-            </DialogTitle>
-            <DialogDescription>
-              Your voucher has been generated. Show this code to the partner store to claim your reward.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="text-center p-6 bg-muted/50 rounded-lg">
-              <h3 className="font-bold text-lg mb-2">{selectedItem?.name}</h3>
-              <div className="text-3xl font-mono font-bold text-primary mb-2">{redemptionCode}</div>
-              <p className="text-sm text-muted-foreground">Voucher Code</p>
-            </div>
+        {/* Enhanced Redemption Dialog */}
+        <Dialog open={showRedemptionDialog} onOpenChange={setShowRedemptionDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-accent" />
+                Redemption Successful!
+              </DialogTitle>
+              <DialogDescription>
+                Your voucher has been generated. Show this code to the partner store to claim your reward.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="text-center p-6 bg-muted/50 rounded-lg">
+                <h3 className="font-bold text-lg mb-2">{selectedItem?.name}</h3>
+                <div className="text-3xl font-mono font-bold text-primary mb-2">{redemptionCode}</div>
+                <p className="text-sm text-muted-foreground">Voucher Code</p>
+              </div>
 
-            {/* Store Information */}
-            {selectedStore && (
-              <div className="p-4 bg-accent/10 rounded-lg">
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Pickup Location
-                </h4>
-                <div className="space-y-1 text-sm">
-                  <p className="font-medium">{selectedStore.name}</p>
-                  <p className="text-muted-foreground">{selectedStore.address}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs">
-                      {selectedStore.distance}km away
-                    </Badge>
-                    {selectedStore.isOpen !== null && (
-                      <Badge variant={selectedStore.isOpen ? "default" : "secondary"} className="text-xs">
-                        {selectedStore.isOpen ? "Open Now" : "Currently Closed"}
+              {/* Store Information */}
+              {selectedStore && (
+                <div className="p-4 bg-accent/10 rounded-lg">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Pickup Location
+                  </h4>
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium">{selectedStore.name}</p>
+                    <p className="text-muted-foreground">{selectedStore.address}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        {selectedStore.distance}km away
                       </Badge>
-                    )}
+                      {selectedStore.isOpen !== null && (
+                        <Badge variant={selectedStore.isOpen ? "default" : "secondary"} className="text-xs">
+                          {selectedStore.isOpen ? "Open Now" : "Currently Closed"}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Partner Store:</span>
-                <span className="font-medium">{selectedItem?.partner}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Valid Until:</span>
-                <span className="font-medium">30 days</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Coins Used:</span>
-                <span className="font-medium">{selectedItem?.cost}</span>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Partner Store:</span>
+                  <span className="font-medium">{selectedItem?.partner}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Valid Until:</span>
+                  <span className="font-medium">30 days</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Coins Used:</span>
+                  <span className="font-medium">{selectedItem?.cost}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={copyCode} className="flex-1 bg-transparent">
-              <Copy className="h-4 w-4 mr-2" />
-              Copy Code
-            </Button>
-            {selectedStore ? (
-              <Button 
-                onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selectedStore.location.lat},${selectedStore.location.lng}`, '_blank')}
-                className="flex-1"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Get Directions
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={copyCode} className="flex-1 bg-transparent">
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Code
               </Button>
-            ) : (
-              <Button onClick={() => setShowRedemptionDialog(false)} className="flex-1">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Find Store
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {selectedStore ? (
+                <Button 
+                  onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selectedStore.location.lat},${selectedStore.location.lng}`, '_blank')}
+                  className="flex-1"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Get Directions
+                </Button>
+              ) : (
+                <Button onClick={() => setShowRedemptionDialog(false)} className="flex-1">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Find Store
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Location Finder Dialog */}
-      <Dialog open={showLocationFinder} onOpenChange={handleLocationFinderClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Find Store Location
-            </DialogTitle>
-            <DialogDescription>
-              Select a nearby store to redeem your {selectedItem?.name}
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedItem && (
-            <LocationFinder
-              rewardType={selectedCategory as 'food' | 'hygiene' | 'connectivity'}
-              rewardItem={selectedItem}
-              onStoreSelect={handleStoreSelect}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+        {/* Location Finder Dialog */}
+        <Dialog open={showLocationFinder} onOpenChange={handleLocationFinderClose}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Find Store Location
+              </DialogTitle>
+              <DialogDescription>
+                Select a nearby store to redeem your {selectedItem?.name}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedItem && (
+              <LocationFinder
+                rewardType={selectedCategory as 'food' | 'hygiene' | 'connectivity'}
+                rewardItem={selectedItem}
+                onStoreSelect={handleStoreSelect}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </ProtectedRoute>
   )
 }

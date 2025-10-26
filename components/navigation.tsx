@@ -60,7 +60,7 @@ export function Navigation() {
             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
               <BookOpen className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold text-lg">EduFeed</span>
+            <span className="font-bold text-lg">ntwanaAfrika</span>
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
@@ -126,7 +126,7 @@ export function Navigation() {
               <BookOpen className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-xl text-white">EduFeed</h1>
+              <h1 className="font-bold text-xl text-white">ntwanaAfrika</h1>
             </div>
           </div>
           <p className="text-sm text-white/80 mb-4">

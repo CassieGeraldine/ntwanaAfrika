@@ -2,7 +2,7 @@
 
 ## Overview
 
-The "Try It" feature allows users to upload their photo and generate AI-powered visualizations of themselves in different career fields. This feature is integrated into the Dreamland page of the eduFeed application.
+The "Try It" feature allows users to upload their photo and generate AI-powered visualizations of themselves in different career fields. This feature is integrated into the Dreamland page of the ntwanaAfrika application.
 
 ## How It Works
 

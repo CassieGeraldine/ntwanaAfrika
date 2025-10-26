@@ -29,7 +29,7 @@ If you're seeing this error, here's the immediate solution:
 ---
 
 ## Overview
-The Google Maps Platform integration enables EduFeed students to find nearby stores where they can redeem their Skill Coin rewards. This feature enhances the real-world impact of the gamified learning system.
+The Google Maps Platform integration enables ntwanaAfrika students to find nearby stores where they can redeem their Skill Coin rewards. This feature enhances the real-world impact of the gamified learning system.
 
 ## Features Implemented
 
