@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useUserData } from "@/hooks/use-user-data"
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,176 +10,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Trophy, Users, Target, Flame, Crown, Medal, Award, Calendar, MapPin, Star, Zap } from "lucide-react"
 
-const currentUser = {
-  name: "Amara Okafor",
-  rank: 23,
-  school: "Ubuntu Primary School",
-  region: "Johannesburg, South Africa",
-  coins: 2450,
-  streak: 7,
-  level: 12,
-}
-
-const leaderboardData = {
-  school: [
-    {
-      rank: 1,
-      name: "Thabo Mthembu",
-      coins: 3850,
-      level: 15,
-      streak: 12,
-      avatar: "/student-avatar-1.png",
-      badge: "Math Genius",
-    },
-    {
-      rank: 2,
-      name: "Nomsa Dlamini",
-      coins: 3420,
-      level: 14,
-      streak: 9,
-      avatar: "/student-avatar-2.png",
-      badge: "Reading Star",
-    },
-    {
-      rank: 3,
-      name: "Sipho Ndaba",
-      coins: 3180,
-      level: 13,
-      streak: 15,
-      avatar: "/student-avatar-3.png",
-      badge: "Science Explorer",
-    },
-    {
-      rank: 4,
-      name: "Lerato Molefe",
-      coins: 2980,
-      level: 13,
-      streak: 6,
-      avatar: "/student-avatar-4.png",
-      badge: "Quick Learner",
-    },
-    {
-      rank: 5,
-      name: "Mandla Khumalo",
-      coins: 2750,
-      level: 12,
-      streak: 8,
-      avatar: "/student-avatar-5.png",
-      badge: "Consistent",
-    },
-  ],
-  region: [
-    {
-      rank: 1,
-      name: "Ubuntu Primary School",
-      coins: 45680,
-      students: 156,
-      avgLevel: 11.2,
-      location: "Johannesburg",
-    },
-    {
-      rank: 2,
-      name: "Mandela High School",
-      coins: 42340,
-      students: 203,
-      avgLevel: 10.8,
-      location: "Soweto",
-    },
-    {
-      rank: 3,
-      name: "Rainbow Elementary",
-      coins: 38920,
-      students: 134,
-      avgLevel: 12.1,
-      location: "Sandton",
-    },
-    {
-      rank: 4,
-      name: "Future Leaders Academy",
-      coins: 35670,
-      students: 178,
-      avgLevel: 9.9,
-      location: "Alexandra",
-    },
-    {
-      rank: 5,
-      name: "Hope Primary School",
-      coins: 33450,
-      students: 145,
-      avgLevel: 10.5,
-      location: "Midrand",
-    },
-  ],
-}
-
-const groupChallenges = [
-  {
-    id: 1,
-    title: "Math Marathon",
-    description: "Complete 50 math lessons as a school",
-    progress: 32,
-    total: 50,
-    timeLeft: "5 days",
-    reward: "500 bonus coins per student",
-    participants: 45,
-    status: "active",
-  },
-  {
-    id: 2,
-    title: "Reading Champions",
-    description: "Read 100 stories across all grades",
-    progress: 78,
-    total: 100,
-    timeLeft: "2 days",
-    reward: "Special reading badges",
-    participants: 67,
-    status: "active",
-  },
-  {
-    id: 3,
-    title: "Science Week",
-    description: "Complete science experiments together",
-    progress: 100,
-    total: 100,
-    timeLeft: "Completed",
-    reward: "Science Explorer badges",
-    participants: 89,
-    status: "completed",
-  },
-]
-
-const achievements = [
-  {
-    title: "Top Performer",
-    description: "Ranked in top 10 of your school",
-    icon: Crown,
-    color: "text-secondary",
-    bgColor: "bg-secondary/10",
-    achieved: false,
-    progress: 70,
-  },
-  {
-    title: "Team Player",
-    description: "Participated in 5 group challenges",
-    icon: Users,
-    color: "text-accent",
-    bgColor: "bg-accent/10",
-    achieved: true,
-    progress: 100,
-  },
-  {
-    title: "Streak Master",
-    description: "Maintain 30-day learning streak",
-    icon: Flame,
-    color: "text-destructive",
-    bgColor: "bg-destructive/10",
-    achieved: false,
-    progress: 23,
-  },
-]
-
 export default function Community() {
   const [activeTab, setActiveTab] = useState("school")
+  const { userProfile } = useUserData()
+
+  const currentUser = {
+    name: userProfile?.displayName || "Learner",
+    rank: userProfile?.rank || 0,
+    school: userProfile?.school || "-",
+    region: userProfile?.region || "-",
+    coins: userProfile?.skillCoins || 0,
+    streak: userProfile?.streak || 0,
+    level: userProfile?.level || 1,
+  }
+
+  // Fetch user-specific leaderboard, achievements, and group challenges from userProfile
+  const leaderboardSchool = userProfile?.leaderboardSchool || []
+  const leaderboardRegion = userProfile?.leaderboardRegion || []
+  const achievements = userProfile?.achievements || []
+  const groupChallenges = userProfile?.groupChallenges || []
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -267,7 +117,7 @@ export default function Community() {
                     </TabsList>
 
                     <TabsContent value="school" className="space-y-3 mt-4">
-                      {leaderboardData.school.map((student, index) => (
+                      {leaderboardSchool.map((student, index) => (
                         <div
                           key={index}
                           className={`flex items-center gap-4 p-3 rounded-lg border ${
@@ -308,7 +158,7 @@ export default function Community() {
                     </TabsContent>
 
                     <TabsContent value="region" className="space-y-3 mt-4">
-                      {leaderboardData.region.map((school, index) => (
+                      {leaderboardRegion.map((school, index) => (
                         <div
                           key={index}
                           className={`flex items-center gap-4 p-3 rounded-lg border ${

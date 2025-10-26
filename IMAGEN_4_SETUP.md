@@ -1,7 +1,7 @@
-# Imagen 4 Setup Guide for eduFeed Career Image Generator
+# Imagen 4 Setup Guide for ntwanaAfrika Career Image Generator
 
 ## Overview
-This guide will help you set up Google Cloud's Imagen 4 for real AI image generation in the eduFeed career visualization feature.
+This guide will help you set up Google Cloud's Imagen 4 for real AI image generation in the ntwanaAfrika career visualization feature.
 
 ## Prerequisites
 - Google Cloud Platform account
@@ -31,8 +31,8 @@ Or enable via the Console:
 ### 3. Create Service Account
 1. Go to IAM & Admin > Service Accounts
 2. Click "Create Service Account"
-3. Name: `edufeed-imagen-service`
-4. Description: `Service account for eduFeed Imagen 4 integration`
+3. Name: `ntwanaAfrika-imagen-service`
+4. Description: `Service account for ntwanaAfrika Imagen 4 integration`
 5. Click "Create and Continue"
 
 ### 4. Assign Roles
@@ -93,7 +93,7 @@ curl -X POST \
   }'
 ```
 
-#### Test 2: eduFeed Integration
+#### Test 2: ntwanaAfrika Integration
 1. Restart your Next.js development server
 2. Go to dreamland page
 3. Click "Try It" on any career
@@ -107,7 +107,7 @@ curl -X POST \
 - **Edit**: $0.030 per image
 - **Upscale**: $0.006 per image
 
-### Cost Estimation for eduFeed
+### Cost Estimation for ntwanaAfrika
 - **Low usage** (10 images/day): ~$6/month
 - **Medium usage** (50 images/day): ~$30/month  
 - **High usage** (200 images/day): ~$120/month

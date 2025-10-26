@@ -114,8 +114,8 @@ To bridge educational inequality in Africa by:
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/CassieGeraldine/eduFeed.git
-cd eduFeed
+git clone https://github.com/CassieGeraldine/ntwanaAfrika.git
+cd ntwanaAfrika
 ```
 
 2. **Install dependencies**

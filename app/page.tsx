@@ -24,119 +24,36 @@ import {
   TrendingUp,
   Award,
 } from "lucide-react";
+import { useUserData } from "@/hooks/use-user-data";
 
 function Dashboard() {
-  const { userProfile, currentUser } = useAuth();
+  const { userProfile } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Use Firebase user data or fallback to defaults
-  const userLevel = userProfile?.level || 1;
-  const skillCoins = userProfile?.skillCoins || 0;
-  const currentStreak = userProfile?.streak || 0;
-  const levelProgress = Math.min((skillCoins % 1000) / 10, 100); // Calculate progress based on coins
-
   useEffect(() => {
-    // Check if onboarding is complete for authenticated users
-    if (currentUser) {
-      const onboardingComplete = localStorage.getItem("onboardingComplete");
-      if (
-        !onboardingComplete &&
-        (!userProfile?.country || !userProfile?.language)
-      ) {
-        router.push("/onboarding");
-        return;
-      }
-    }
-    setIsLoading(false);
-  }, [router, currentUser, userProfile]);
+    if (userProfile) setIsLoading(false);
+  }, [userProfile]);
 
-  const dailyQuests = [
-    {
-      id: 1,
-      title: "Complete 2 Math lessons",
-      progress: 1,
-      total: 2,
-      reward: 50,
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Practice reading for 15 minutes",
-      progress: 15,
-      total: 15,
-      reward: 30,
-      completed: true,
-    },
-    {
-      id: 3,
-      title: "Answer 10 science questions",
-      progress: 7,
-      total: 10,
-      reward: 40,
-      completed: false,
-    },
-  ];
-
-  const recentBadges = [
-    { name: "Math Master", icon: "🧮", earned: "Today", rarity: "gold" },
-    { name: "Reading Star", icon: "📚", earned: "Yesterday", rarity: "silver" },
-    {
-      name: "Science Explorer",
-      icon: "🔬",
-      earned: "2 days ago",
-      rarity: "bronze",
-    },
-  ];
-
-  const subjects = [
-    {
-      name: "Mathematics",
-      icon: "🧮",
-      progress: 85,
-      lessons: 24,
-      color: "text-chart-1",
-    },
-    {
-      name: "Reading",
-      icon: "📚",
-      progress: 92,
-      lessons: 18,
-      color: "text-chart-2",
-    },
-    {
-      name: "Science",
-      icon: "🔬",
-      progress: 67,
-      lessons: 15,
-      color: "text-chart-3",
-    },
-    {
-      name: "Life Skills",
-      icon: "🌱",
-      progress: 45,
-      lessons: 12,
-      color: "text-chart-4",
-    },
-  ];
-
-  const weeklyStats = [
-    { day: "Mon", lessons: 3, coins: 150 },
-    { day: "Tue", lessons: 2, coins: 100 },
-    { day: "Wed", lessons: 4, coins: 200 },
-    { day: "Thu", lessons: 1, coins: 50 },
-    { day: "Fri", lessons: 3, coins: 150 },
-    { day: "Sat", lessons: 2, coins: 100 },
-    { day: "Sun", lessons: 0, coins: 0 },
-  ];
-
-  if (isLoading) {
+  if (isLoading || !userProfile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
+
+  // Dynamic stats from userProfile
+  const userLevel = userProfile.level;
+  const skillCoins = userProfile.skillCoins;
+  const currentStreak = userProfile.streak;
+  const totalLessonsCompleted = userProfile.totalLessonsCompleted;
+  const badges = userProfile.badges || [];
+  const rank = userProfile.rank || "-";
+  const dailyQuests = userProfile.dailyQuests || [];
+  const subjectProgress = userProfile.subjectProgress || [];
+
+  const levelProgress = Math.min((skillCoins % 1000) / 10, 100);
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,13 +70,10 @@ function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-balance">
-                  Welcome{currentUser?.isAnonymous ? "" : " back"},{" "}
-                  {userProfile?.firstName || userProfile?.displayName || "Learner"}! 👋
+                  Welcome back, {userProfile.firstName || userProfile.displayName || "Learner"}! 👋
                 </h1>
                 <p className="text-muted-foreground">
-                  {currentUser?.isAnonymous
-                    ? "Start your learning journey in guest mode!"
-                    : "Ready to continue your learning journey?"}
+                  Ready to continue your learning journey?
                 </p>
               </div>
               <div className="flex items-center gap-2 bg-destructive/10 px-3 py-2 rounded-lg">
@@ -235,7 +149,9 @@ function Dashboard() {
                   <BookOpen className="h-5 w-5 text-accent" />
                   <span className="text-sm font-medium">Lessons</span>
                 </div>
-                <div className="text-2xl font-bold">69</div>
+                <div className="text-2xl font-bold">
+                  {totalLessonsCompleted}
+                </div>
                 <span className="text-xs text-muted-foreground">
                   completed this month
                 </span>
@@ -248,7 +164,7 @@ function Dashboard() {
                   <Star className="h-5 w-5 text-secondary" />
                   <span className="text-sm font-medium">Badges</span>
                 </div>
-                <div className="text-2xl font-bold">12</div>
+                <div className="text-2xl font-bold">{badges.length}</div>
                 <span className="text-xs text-muted-foreground">earned</span>
               </CardContent>
             </Card>
@@ -259,7 +175,7 @@ function Dashboard() {
                   <Trophy className="h-5 w-5 text-destructive" />
                   <span className="text-sm font-medium">Rank</span>
                 </div>
-                <div className="text-2xl font-bold">#23</div>
+                <div className="text-2xl font-bold">#{rank}</div>
                 <span className="text-xs text-muted-foreground">
                   in your school
                 </span>
@@ -326,7 +242,7 @@ function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {subjects.map((subject) => (
+                {subjectProgress.map((subject) => (
                   <div
                     key={subject.name}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -363,7 +279,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {recentBadges.map((badge, index) => (
+                {badges.map((badge, index) => (
                   <div
                     key={index}
                     className="flex-shrink-0 text-center p-4 rounded-lg border bg-gradient-to-b from-muted/30 to-muted/50 min-w-[120px] hover:shadow-md transition-shadow"
@@ -395,7 +311,11 @@ function Dashboard() {
 
           {/* Quick Actions */}
           <div className="mt-6 flex flex-col sm:flex-row gap-4">
-            <Button className="flex-1 bg-primary hover:bg-primary/90" size="lg">
+            <Button
+              className="flex-1 bg-primary hover:bg-primary/90"
+              size="lg"
+              onClick={() => router.push("/learn")}
+            >
               <BookOpen className="h-5 w-5 mr-2" />
               Continue Learning
             </Button>
@@ -403,6 +323,7 @@ function Dashboard() {
               variant="outline"
               className="flex-1 bg-transparent"
               size="lg"
+              onClick={() => router.push("/rewards")}
             >
               <Gift className="h-5 w-5 mr-2" />
               View Rewards
