@@ -167,7 +167,7 @@ export default function Rewards() {
   const [selectedStore, setSelectedStore] = useState<NearbyStore | null>(null)
   const [redemptionCode, setRedemptionCode] = useState("")
 
-  const { userProfile, spendCoins } = useUserData()
+  const { userProfile, redeemReward } = useUserData()
 
   if (!userProfile) {
     return (

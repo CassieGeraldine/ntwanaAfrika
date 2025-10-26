@@ -1,131 +1,143 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { useAuth } from '@/contexts/auth-context'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react'
+import { useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from "lucide-react";
 
 interface AuthFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function AuthForm({ onSuccess }: AuthFormProps) {
-  const { login, signup, loginWithGoogle, loginAnonymously, resetPassword } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
-  const [activeTab, setActiveTab] = useState('login')
+  const { login, signup, loginWithGoogle, loginAnonymously, resetPassword } =
+    useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
 
   // Login form state
   const [loginData, setLoginData] = useState({
-    email: '',
-    password: '',
-  })
+    email: "",
+    password: "",
+  });
 
   // Signup form state
   const [signupData, setSignupData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  })
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      await login(loginData.email, loginData.password)
-      onSuccess?.()
+      await login(loginData.email, loginData.password);
+      onSuccess?.();
     } catch (error: any) {
-      setError(error.message || 'Failed to log in')
+      setError(error.message || "Failed to log in");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     if (signupData.password !== signupData.confirmPassword) {
-      setError('Passwords do not match')
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
 
     if (signupData.password.length < 6) {
-      setError('Password must be at least 6 characters')
-      setIsLoading(false)
-      return
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
     }
 
     try {
-      await signup(signupData.email, signupData.password, signupData.firstName, signupData.lastName)
-      onSuccess?.()
+      await signup(
+        signupData.email,
+        signupData.password,
+        signupData.firstName,
+        signupData.lastName
+      );
+      onSuccess?.();
     } catch (error: any) {
-      setError(error.message || 'Failed to create account')
+      setError(error.message || "Failed to create account");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true)
-    setError('')
+    setIsLoading(true);
+    setError("");
 
     try {
-      await loginWithGoogle()
-      onSuccess?.()
+      await loginWithGoogle();
+      onSuccess?.();
     } catch (error: any) {
-      setError(error.message || 'Failed to log in with Google')
+      setError(error.message || "Failed to log in with Google");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleAnonymousLogin = async () => {
-    setIsLoading(true)
-    setError('')
+    setIsLoading(true);
+    setError("");
 
     try {
-      await loginAnonymously()
-      onSuccess?.()
+      await loginAnonymously();
+      onSuccess?.();
     } catch (error: any) {
-      setError(error.message || 'Failed to continue as guest')
+      setError(error.message || "Failed to continue as guest");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handlePasswordReset = async () => {
     if (!loginData.email) {
-      setError('Please enter your email address first')
-      return
+      setError("Please enter your email address first");
+      return;
     }
 
-    setIsLoading(true)
-    setError('')
-    setMessage('')
+    setIsLoading(true);
+    setError("");
+    setMessage("");
 
     try {
-      await resetPassword(loginData.email)
-      setMessage('Password reset email sent! Check your inbox.')
+      await resetPassword(loginData.email);
+      setMessage("Password reset email sent! Check your inbox.");
     } catch (error: any) {
-      setError(error.message || 'Failed to send password reset email')
+      setError(error.message || "Failed to send password reset email");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -134,10 +146,9 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           Welcome to ntwanaAfrika
         </CardTitle>
         <CardDescription>
-          {activeTab === 'login' 
-            ? 'Sign in to continue your learning journey' 
-            : 'Create an account to start learning'
-          }
+          {activeTab === "login"
+            ? "Sign in to continue your learning journey"
+            : "Create an account to start learning"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -172,7 +183,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     type="email"
                     placeholder="Enter your email"
                     value={loginData.email}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setLoginData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
                     className="pl-10"
                     required
                   />
@@ -188,7 +204,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={loginData.password}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                    onChange={(e) =>
+                      setLoginData((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
                     className="pl-10 pr-10"
                     required
                   />
@@ -199,7 +220,11 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -232,7 +257,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                       type="text"
                       placeholder="First name"
                       value={signupData.firstName}
-                      onChange={(e) => setSignupData(prev => ({ ...prev, firstName: e.target.value }))}
+                      onChange={(e) =>
+                        setSignupData((prev) => ({
+                          ...prev,
+                          firstName: e.target.value,
+                        }))
+                      }
                       className="pl-10"
                       required
                     />
@@ -248,7 +278,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                       type="text"
                       placeholder="Last name"
                       value={signupData.lastName}
-                      onChange={(e) => setSignupData(prev => ({ ...prev, lastName: e.target.value }))}
+                      onChange={(e) =>
+                        setSignupData((prev) => ({
+                          ...prev,
+                          lastName: e.target.value,
+                        }))
+                      }
                       className="pl-10"
                       required
                     />
@@ -265,7 +300,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     type="email"
                     placeholder="Enter your email"
                     value={signupData.email}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setSignupData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
                     className="pl-10"
                     required
                   />
@@ -281,7 +321,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
                     value={signupData.password}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
+                    onChange={(e) =>
+                      setSignupData((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
                     className="pl-10 pr-10"
                     required
                   />
@@ -292,7 +337,11 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -306,7 +355,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     type={showPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={signupData.confirmPassword}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setSignupData((prev) => ({
+                        ...prev,
+                        confirmPassword: e.target.value,
+                      }))
+                    }
                     className="pl-10"
                     required
                   />
@@ -325,7 +379,9 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
         </div>
 
@@ -377,5 +433,5 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }

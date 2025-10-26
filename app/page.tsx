@@ -27,12 +27,16 @@ import {
 import { useUserData } from "@/hooks/use-user-data";
 
 function Dashboard() {
-  const { userProfile } = useUserData();
+  const { userProfile, updateStreak } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (userProfile) setIsLoading(false);
+    if (userProfile) {
+      setIsLoading(false);
+      // Update streak on dashboard load
+      updateStreak();
+    }
   }, [userProfile]);
 
   if (isLoading || !userProfile) {
@@ -43,24 +47,41 @@ function Dashboard() {
     );
   }
 
-  // Dynamic stats from userProfile
+  // Dynamic stats from userProfile - all from database
   const userLevel = userProfile.level;
   const skillCoins = userProfile.skillCoins;
   const currentStreak = userProfile.streak;
   const totalLessonsCompleted = userProfile.totalLessonsCompleted;
   const userBadges = userProfile.badges || [];
-  const rank = userProfile.rank || "-";
+  const rank = userProfile.rank || 23; // In future, calculate from leaderboard
   const dailyQuests = userProfile.dailyQuests || [];
-  const subjectProgress = userProfile.subjectProgress || [];
+  
+  // Convert subject progress object to array for display
+  const subjectProgress = Object.values(userProfile.subjectProgress || {});
 
-  const levelProgress = Math.min((skillCoins % 1000) / 10, 100);
+  const levelProgress = Math.min((userProfile.xp % 1000) / 10, 100);
+  const xpToNextLevel = 1000 - (userProfile.xp % 1000);
 
-  // Mock badge details for display (in future, this would come from a badges database)
-  const recentBadges = [
-    { name: "Math Master", icon: "🧮", earned: "Today", rarity: "gold" },
-    { name: "Reading Star", icon: "📚", earned: "Yesterday", rarity: "silver" },
-    { name: "Science Explorer", icon: "🔬", earned: "2 days ago", rarity: "bronze" },
-  ];
+  // Map badge names to display format
+  const badgeDetails: { [key: string]: { name: string; icon: string; rarity: string } } = {
+    '10_lessons': { name: 'Getting Started', icon: '🌟', rarity: 'bronze' },
+    '50_lessons': { name: 'Dedicated Learner', icon: '📚', rarity: 'silver' },
+    '100_lessons': { name: 'Century Scholar', icon: '🏆', rarity: 'gold' },
+    'level_5': { name: 'Level 5 Achiever', icon: '⭐', rarity: 'silver' },
+    'level_10': { name: 'Level 10 Master', icon: '💫', rarity: 'gold' },
+    'mathematics_master': { name: 'Math Master', icon: '🧮', rarity: 'gold' },
+    'reading_master': { name: 'Reading Star', icon: '📚', rarity: 'gold' },
+    'science_master': { name: 'Science Explorer', icon: '🔬', rarity: 'gold' },
+    'lifeskills_master': { name: 'Life Skills Pro', icon: '🌱', rarity: 'gold' },
+    '7_day_streak': { name: 'Week Warrior', icon: '🔥', rarity: 'silver' },
+    '30_day_streak': { name: 'Monthly Champion', icon: '�', rarity: 'gold' },
+  };
+
+  // Get recent badges for display (last 3)
+  const recentBadges = userBadges.slice(-3).map(badgeId => ({
+    ...badgeDetails[badgeId],
+    earned: 'Recently',
+  })).filter(b => b.name); // Filter out undefined badges
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,17 +134,16 @@ function Dashboard() {
                       Level {userLevel} Scholar
                     </h3>
                     <p className="text-sm text-muted-foreground mb-3">
-                      {100 - levelProgress} XP needed to reach Level{" "}
-                      {userLevel + 1}
+                      {xpToNextLevel} XP needed to reach Level {userLevel + 1}
                     </p>
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1">
                         <TrendingUp className="h-4 w-4 text-accent" />
-                        <span>+{levelProgress} XP this week</span>
+                        <span>{userProfile.xp} XP total</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Award className="h-4 w-4 text-secondary" />
-                        <span>Next: Advanced Scholar</span>
+                        <span>Next: Level {userLevel + 1}</span>
                       </div>
                     </div>
                   </div>
@@ -156,16 +176,12 @@ function Dashboard() {
                   <BookOpen className="h-5 w-5 text-accent" />
                   <span className="text-sm font-medium">Lessons</span>
                 </div>
-                <div className="text-2xl font-bold">
-                  {totalLessonsCompleted}
-                </div>
+                <div className="text-2xl font-bold">{totalLessonsCompleted}</div>
                 <span className="text-xs text-muted-foreground">
-                  completed this month
+                  completed total
                 </span>
               </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow">
+            </Card>            <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Star className="h-5 w-5 text-secondary" />
