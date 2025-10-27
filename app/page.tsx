@@ -94,9 +94,14 @@ function Dashboard() {
       return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
     }
     if (userProfile.displayName) {
-      return userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return userProfile.displayName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
     }
-    return 'U';
+    return "U";
   };
 
   return (

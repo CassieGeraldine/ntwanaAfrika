@@ -106,44 +106,111 @@ export default function Profile() {
   };
 
   // Map badge IDs to display format
-  const badgeDetails: { [key: string]: { name: string; icon: string; description: string; rarity: string } } = {
-    '10_lessons': { name: 'Getting Started', icon: '🌟', description: 'Complete 10 lessons', rarity: 'bronze' },
-    '50_lessons': { name: 'Dedicated Learner', icon: '📚', description: 'Complete 50 lessons', rarity: 'silver' },
-    '100_lessons': { name: 'Century Scholar', icon: '🏆', description: 'Complete 100 lessons', rarity: 'gold' },
-    'level_5': { name: 'Level 5 Achiever', icon: '⭐', description: 'Reach level 5', rarity: 'silver' },
-    'level_10': { name: 'Level 10 Master', icon: '💫', description: 'Reach level 10', rarity: 'gold' },
-    'mathematics_master': { name: 'Math Master', icon: '🧮', description: 'Complete all math lessons', rarity: 'gold' },
-    'reading_master': { name: 'Reading Star', icon: '📚', description: 'Complete all reading lessons', rarity: 'gold' },
-    'science_master': { name: 'Science Explorer', icon: '�', description: 'Complete all science lessons', rarity: 'gold' },
-    'lifeskills_master': { name: 'Life Skills Pro', icon: '🌱', description: 'Complete all life skills lessons', rarity: 'gold' },
-    '7_day_streak': { name: 'Week Warrior', icon: '�', description: 'Maintain 7-day streak', rarity: 'bronze' },
-    '30_day_streak': { name: 'Month Master', icon: '⚡', description: 'Maintain 30-day streak', rarity: 'gold' },
+  const badgeDetails: {
+    [key: string]: {
+      name: string;
+      icon: string;
+      description: string;
+      rarity: string;
+    };
+  } = {
+    "10_lessons": {
+      name: "Getting Started",
+      icon: "🌟",
+      description: "Complete 10 lessons",
+      rarity: "bronze",
+    },
+    "50_lessons": {
+      name: "Dedicated Learner",
+      icon: "📚",
+      description: "Complete 50 lessons",
+      rarity: "silver",
+    },
+    "100_lessons": {
+      name: "Century Scholar",
+      icon: "🏆",
+      description: "Complete 100 lessons",
+      rarity: "gold",
+    },
+    level_5: {
+      name: "Level 5 Achiever",
+      icon: "⭐",
+      description: "Reach level 5",
+      rarity: "silver",
+    },
+    level_10: {
+      name: "Level 10 Master",
+      icon: "💫",
+      description: "Reach level 10",
+      rarity: "gold",
+    },
+    mathematics_master: {
+      name: "Math Master",
+      icon: "🧮",
+      description: "Complete all math lessons",
+      rarity: "gold",
+    },
+    reading_master: {
+      name: "Reading Star",
+      icon: "📚",
+      description: "Complete all reading lessons",
+      rarity: "gold",
+    },
+    science_master: {
+      name: "Science Explorer",
+      icon: "�",
+      description: "Complete all science lessons",
+      rarity: "gold",
+    },
+    lifeskills_master: {
+      name: "Life Skills Pro",
+      icon: "🌱",
+      description: "Complete all life skills lessons",
+      rarity: "gold",
+    },
+    "7_day_streak": {
+      name: "Week Warrior",
+      icon: "�",
+      description: "Maintain 7-day streak",
+      rarity: "bronze",
+    },
+    "30_day_streak": {
+      name: "Month Master",
+      icon: "⚡",
+      description: "Maintain 30-day streak",
+      rarity: "gold",
+    },
   };
 
   // Get all possible badges (earned + not earned)
   const allBadgeIds = Object.keys(badgeDetails);
   const earnedBadges = userProfile.badges || [];
-  
-  const badges = allBadgeIds.map(badgeId => ({
+
+  const badges = allBadgeIds.map((badgeId) => ({
     ...badgeDetails[badgeId],
     earned: earnedBadges.includes(badgeId),
   }));
 
   // Recent activity from rewards redeemed
   const recentActivity = [
-    ...(userProfile.rewardsRedeemed || []).slice(-5).reverse().map(reward => ({
-      action: "Redeemed",
-      item: reward.name,
-      time: new Date(reward.redeemedAt).toLocaleDateString(),
-      coins: -reward.coins,
-    })),
+    ...(userProfile.rewardsRedeemed || [])
+      .slice(-5)
+      .reverse()
+      .map((reward) => ({
+        action: "Redeemed",
+        item: reward.name,
+        time: new Date(reward.redeemedAt).toLocaleDateString(),
+        coins: -reward.coins,
+      })),
     // Add completed lessons
-    ...(userProfile.completedLessons || []).slice(-3).map((lessonId, index) => ({
-      action: "Completed",
-      item: lessonId.replace(/_/g, ' '),
-      time: `${index + 1} days ago`,
-      coins: 50,
-    })),
+    ...(userProfile.completedLessons || [])
+      .slice(-3)
+      .map((lessonId, index) => ({
+        action: "Completed",
+        item: lessonId.replace(/_/g, " "),
+        time: `${index + 1} days ago`,
+        coins: 50,
+      })),
   ].slice(0, 5);
 
   // Calculate achievements
@@ -184,15 +251,23 @@ export default function Profile() {
       return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
     }
     if (userProfile.displayName) {
-      return userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return userProfile.displayName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
     }
-    return 'U';
+    return "U";
   };
 
   // Format join date
-  const joinDate = userProfile.joinDate 
-    ? new Date(userProfile.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : 'Recently';
+  const joinDate = userProfile.joinDate
+    ? new Date(userProfile.joinDate).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      })
+    : "Recently";
 
   // Convert subject progress to array
   const subjectProgress = Object.values(userProfile.subjectProgress || {});
@@ -238,7 +313,9 @@ export default function Profile() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-2xl font-bold">
-                      {userProfile.displayName || `${userProfile.firstName} ${userProfile.lastName}`.trim() || 'User'}
+                      {userProfile.displayName ||
+                        `${userProfile.firstName} ${userProfile.lastName}`.trim() ||
+                        "User"}
                     </h1>
                     <Badge className="bg-secondary text-secondary-foreground">
                       Level {userProfile.level}
@@ -247,11 +324,11 @@ export default function Profile() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
-                      <span>{userProfile.school || 'Not set'}</span>
+                      <span>{userProfile.school || "Not set"}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <BookOpen className="h-4 w-4" />
-                      <span>{userProfile.grade || 'Not set'}</span>
+                      <span>{userProfile.grade || "Not set"}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
@@ -259,20 +336,24 @@ export default function Profile() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Trophy className="h-4 w-4" />
-                      <span>Rank #{userProfile.rank || 'N/A'}</span>
+                      <span>Rank #{userProfile.rank || "N/A"}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(!isEditing)}
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setActiveTab('settings')}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTab("settings")}
+                  >
                     <Settings className="h-4 w-4" />
                   </Button>
                 </div>
@@ -285,7 +366,9 @@ export default function Profile() {
             <Card>
               <CardContent className="p-4 text-center">
                 <Zap className="h-8 w-8 text-secondary mx-auto mb-2" />
-                <div className="text-2xl font-bold">{userProfile.skillCoins}</div>
+                <div className="text-2xl font-bold">
+                  {userProfile.skillCoins}
+                </div>
                 <div className="text-xs text-muted-foreground">Skill Coins</div>
               </CardContent>
             </Card>
@@ -390,9 +473,15 @@ export default function Profile() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-accent">
-                          {subjectProgress.length > 0 
-                            ? Math.round(subjectProgress.reduce((acc, s) => acc + s.progress, 0) / subjectProgress.length)
-                            : 0}%
+                          {subjectProgress.length > 0
+                            ? Math.round(
+                                subjectProgress.reduce(
+                                  (acc, s) => acc + s.progress,
+                                  0
+                                ) / subjectProgress.length
+                              )
+                            : 0}
+                          %
                         </div>
                         <div className="text-xs text-muted-foreground">
                           Average Progress
@@ -535,7 +624,11 @@ export default function Profile() {
                           <Save className="h-4 w-4 mr-2" />
                           Save
                         </Button>
-                        <Button onClick={handleCancelEdit} variant="outline" size="sm">
+                        <Button
+                          onClick={handleCancelEdit}
+                          variant="outline"
+                          size="sm"
+                        >
                           <X className="h-4 w-4 mr-2" />
                           Cancel
                         </Button>
@@ -550,12 +643,17 @@ export default function Profile() {
                       {isEditing ? (
                         <Input
                           value={editForm.firstName}
-                          onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              firstName: e.target.value,
+                            })
+                          }
                           className="mt-1"
                         />
                       ) : (
                         <div className="mt-1 p-2 bg-muted rounded text-sm">
-                          {userProfile.firstName || 'Not set'}
+                          {userProfile.firstName || "Not set"}
                         </div>
                       )}
                     </div>
@@ -564,19 +662,24 @@ export default function Profile() {
                       {isEditing ? (
                         <Input
                           value={editForm.lastName}
-                          onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              lastName: e.target.value,
+                            })
+                          }
                           className="mt-1"
                         />
                       ) : (
                         <div className="mt-1 p-2 bg-muted rounded text-sm">
-                          {userProfile.lastName || 'Not set'}
+                          {userProfile.lastName || "Not set"}
                         </div>
                       )}
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Email</Label>
                       <div className="mt-1 p-2 bg-muted rounded text-sm">
-                        {userProfile.email || 'Not set'}
+                        {userProfile.email || "Not set"}
                       </div>
                     </div>
                     <div>
@@ -584,12 +687,14 @@ export default function Profile() {
                       {isEditing ? (
                         <Input
                           value={editForm.school}
-                          onChange={(e) => setEditForm({ ...editForm, school: e.target.value })}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, school: e.target.value })
+                          }
                           className="mt-1"
                         />
                       ) : (
                         <div className="mt-1 p-2 bg-muted rounded text-sm">
-                          {userProfile.school || 'Not set'}
+                          {userProfile.school || "Not set"}
                         </div>
                       )}
                     </div>
@@ -598,12 +703,14 @@ export default function Profile() {
                       {isEditing ? (
                         <Input
                           value={editForm.grade}
-                          onChange={(e) => setEditForm({ ...editForm, grade: e.target.value })}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, grade: e.target.value })
+                          }
                           className="mt-1"
                         />
                       ) : (
                         <div className="mt-1 p-2 bg-muted rounded text-sm">
-                          {userProfile.grade || 'Not set'}
+                          {userProfile.grade || "Not set"}
                         </div>
                       )}
                     </div>
@@ -612,12 +719,17 @@ export default function Profile() {
                       {isEditing ? (
                         <Input
                           value={editForm.language}
-                          onChange={(e) => setEditForm({ ...editForm, language: e.target.value })}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              language: e.target.value,
+                            })
+                          }
                           className="mt-1"
                         />
                       ) : (
                         <div className="mt-1 p-2 bg-muted rounded text-sm">
-                          {userProfile.language || 'Not set'}
+                          {userProfile.language || "Not set"}
                         </div>
                       )}
                     </div>
@@ -626,12 +738,17 @@ export default function Profile() {
                       {isEditing ? (
                         <Input
                           value={editForm.country}
-                          onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              country: e.target.value,
+                            })
+                          }
                           className="mt-1"
                         />
                       ) : (
                         <div className="mt-1 p-2 bg-muted rounded text-sm">
-                          {userProfile.country || 'Not set'}
+                          {userProfile.country || "Not set"}
                         </div>
                       )}
                     </div>

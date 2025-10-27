@@ -58,12 +58,17 @@ export function Navigation() {
       return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
     }
     if (userProfile?.displayName) {
-      return userProfile.displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+      return userProfile.displayName
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
     }
     if (currentUser?.email) {
       return currentUser.email[0].toUpperCase();
     }
-    return 'G';
+    return "G";
   };
 
   return (
@@ -229,15 +234,19 @@ export function Navigation() {
               <div className="font-medium text-white truncate">
                 {currentUser?.isAnonymous
                   ? "Guest User"
-                  : userProfile?.displayName || 
-                    `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() ||
-                    currentUser?.email || 
+                  : userProfile?.displayName ||
+                    `${userProfile?.firstName || ""} ${
+                      userProfile?.lastName || ""
+                    }`.trim() ||
+                    currentUser?.email ||
                     "Student"}
               </div>
               <div className="text-sm text-white/70">
                 {currentUser?.isAnonymous
                   ? "Browsing as guest"
-                  : `Level ${userProfile?.level || 1} • ${userProfile?.skillCoins || 0} coins`}
+                  : `Level ${userProfile?.level || 1} • ${
+                      userProfile?.skillCoins || 0
+                    } coins`}
               </div>
             </div>
           </div>
