@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   BookOpen,
   Trophy,
@@ -27,15 +28,14 @@ import {
 import { useUserData } from "@/hooks/use-user-data";
 
 function Dashboard() {
-  const { userProfile, updateStreak } = useUserData();
+  const { userProfile } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     if (userProfile) {
       setIsLoading(false);
-      // Update streak on dashboard load
-      updateStreak();
+      // Streak is now auto-updated in auth-context once per day
     }
   }, [userProfile]);
 
@@ -55,7 +55,7 @@ function Dashboard() {
   const userBadges = userProfile.badges || [];
   const rank = userProfile.rank || 23; // In future, calculate from leaderboard
   const dailyQuests = userProfile.dailyQuests || [];
-  
+
   // Convert subject progress object to array for display
   const subjectProgress = Object.values(userProfile.subjectProgress || {});
 
@@ -63,25 +63,41 @@ function Dashboard() {
   const xpToNextLevel = 1000 - (userProfile.xp % 1000);
 
   // Map badge names to display format
-  const badgeDetails: { [key: string]: { name: string; icon: string; rarity: string } } = {
-    '10_lessons': { name: 'Getting Started', icon: '🌟', rarity: 'bronze' },
-    '50_lessons': { name: 'Dedicated Learner', icon: '📚', rarity: 'silver' },
-    '100_lessons': { name: 'Century Scholar', icon: '🏆', rarity: 'gold' },
-    'level_5': { name: 'Level 5 Achiever', icon: '⭐', rarity: 'silver' },
-    'level_10': { name: 'Level 10 Master', icon: '💫', rarity: 'gold' },
-    'mathematics_master': { name: 'Math Master', icon: '🧮', rarity: 'gold' },
-    'reading_master': { name: 'Reading Star', icon: '📚', rarity: 'gold' },
-    'science_master': { name: 'Science Explorer', icon: '🔬', rarity: 'gold' },
-    'lifeskills_master': { name: 'Life Skills Pro', icon: '🌱', rarity: 'gold' },
-    '7_day_streak': { name: 'Week Warrior', icon: '🔥', rarity: 'silver' },
-    '30_day_streak': { name: 'Monthly Champion', icon: '�', rarity: 'gold' },
+  const badgeDetails: {
+    [key: string]: { name: string; icon: string; rarity: string };
+  } = {
+    "10_lessons": { name: "Getting Started", icon: "🌟", rarity: "bronze" },
+    "50_lessons": { name: "Dedicated Learner", icon: "📚", rarity: "silver" },
+    "100_lessons": { name: "Century Scholar", icon: "🏆", rarity: "gold" },
+    level_5: { name: "Level 5 Achiever", icon: "⭐", rarity: "silver" },
+    level_10: { name: "Level 10 Master", icon: "💫", rarity: "gold" },
+    mathematics_master: { name: "Math Master", icon: "🧮", rarity: "gold" },
+    reading_master: { name: "Reading Star", icon: "📚", rarity: "gold" },
+    science_master: { name: "Science Explorer", icon: "🔬", rarity: "gold" },
+    lifeskills_master: { name: "Life Skills Pro", icon: "🌱", rarity: "gold" },
+    "7_day_streak": { name: "Week Warrior", icon: "🔥", rarity: "silver" },
+    "30_day_streak": { name: "Monthly Champion", icon: "�", rarity: "gold" },
   };
 
   // Get recent badges for display (last 3)
-  const recentBadges = userBadges.slice(-3).map(badgeId => ({
-    ...badgeDetails[badgeId],
-    earned: 'Recently',
-  })).filter(b => b.name); // Filter out undefined badges
+  const recentBadges = userBadges
+    .slice(-3)
+    .map((badgeId) => ({
+      ...badgeDetails[badgeId],
+      earned: "Recently",
+    }))
+    .filter((b) => b.name); // Filter out undefined badges
+
+  // Get user initials for avatar fallback
+  const getInitials = () => {
+    if (userProfile.firstName && userProfile.lastName) {
+      return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
+    }
+    if (userProfile.displayName) {
+      return userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return 'U';
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,13 +112,25 @@ function Dashboard() {
           {/* Welcome Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-balance">
-                  Welcome back, {userProfile.firstName || userProfile.displayName || "Learner"}! 👋
-                </h1>
-                <p className="text-muted-foreground">
-                  Ready to continue your learning journey?
-                </p>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={userProfile.photoURL} alt="User avatar" />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-balance">
+                    Welcome back,{" "}
+                    {userProfile.firstName ||
+                      userProfile.displayName ||
+                      "Learner"}
+                    ! 👋
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Ready to continue your learning journey?
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2 bg-destructive/10 px-3 py-2 rounded-lg">
                 <Flame className="h-5 w-5 text-destructive animate-pulse-glow" />
@@ -169,19 +197,21 @@ function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="h-5 w-5 text-accent" />
                   <span className="text-sm font-medium">Lessons</span>
                 </div>
-                <div className="text-2xl font-bold">{totalLessonsCompleted}</div>
+                <div className="text-2xl font-bold">
+                  {totalLessonsCompleted}
+                </div>
                 <span className="text-xs text-muted-foreground">
                   completed total
                 </span>
               </CardContent>
-            </Card>            <Card className="hover:shadow-md transition-shadow">
+            </Card>{" "}
+            <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Star className="h-5 w-5 text-secondary" />
@@ -191,7 +221,6 @@ function Dashboard() {
                 <span className="text-xs text-muted-foreground">earned</span>
               </CardContent>
             </Card>
-
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">

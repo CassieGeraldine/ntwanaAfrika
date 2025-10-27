@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from "@/contexts/auth-context"
 import {
   Dialog,
   DialogContent,
@@ -99,6 +100,7 @@ interface ChatMessage {
 }
 
 export default function MentalHealthHub() {
+  const { userProfile } = useAuth();
   const [selectedMood, setSelectedMood] = useState<string | null>(null)
   const [moodHistory, setMoodHistory] = useState([
     { date: "Today", mood: "okay" },
@@ -120,6 +122,17 @@ export default function MentalHealthHub() {
   const [chatInput, setChatInput] = useState("")
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false)
   const [distressLevel, setDistressLevel] = useState(0)
+
+  // Get user initials for avatar fallback
+  const getInitials = () => {
+    if (userProfile?.firstName && userProfile?.lastName) {
+      return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
+    }
+    if (userProfile?.displayName) {
+      return userProfile.displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return 'U';
+  };
 
   const handleMoodSelect = (mood: string) => {
     setSelectedMood(mood)
@@ -407,6 +420,14 @@ export default function MentalHealthHub() {
                       <span>{message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
                   </div>
+                  {message.sender === "user" && (
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={userProfile?.photoURL} alt="User avatar" />
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {getInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
               ))}
             </div>

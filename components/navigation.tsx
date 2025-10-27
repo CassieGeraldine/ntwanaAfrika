@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -49,6 +50,20 @@ export function Navigation() {
     } catch (error) {
       console.error("Error logging out:", error);
     }
+  };
+
+  // Get user initials for avatar fallback
+  const getInitials = () => {
+    if (userProfile?.firstName && userProfile?.lastName) {
+      return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
+    }
+    if (userProfile?.displayName) {
+      return userProfile.displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (currentUser?.email) {
+      return currentUser.email[0].toUpperCase();
+    }
+    return 'G';
   };
 
   return (
@@ -204,14 +219,20 @@ export function Navigation() {
         {/* Bottom Student Status */}
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center gap-3 px-2">
-            <User className="h-5 w-5 text-white" />
-            <div>
-              <div className="font-medium text-white">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={userProfile?.photoURL} alt="User avatar" />
+              <AvatarFallback className="bg-orange-500 text-white">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-white truncate">
                 {currentUser?.isAnonymous
                   ? "Guest User"
-                  : userProfile?.firstName
-                  ? `${userProfile.firstName} ${userProfile.lastName || ""}`
-                  : userProfile?.displayName || currentUser?.email || "Student"}
+                  : userProfile?.displayName || 
+                    `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() ||
+                    currentUser?.email || 
+                    "Student"}
               </div>
               <div className="text-sm text-white/70">
                 {currentUser?.isAnonymous

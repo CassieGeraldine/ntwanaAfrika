@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
-import { AIQuiz } from "@/components/ai-quiz"
-import { CareerImageGenerator } from "@/components/career-image-generator"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Navigation } from "@/components/navigation";
+import { AIQuiz } from "@/components/ai-quiz";
+import { CareerImageGenerator } from "@/components/career-image-generator";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Sparkles,
   Rocket,
@@ -26,7 +27,8 @@ import {
   Calendar,
   Loader2,
   ExternalLink,
-} from "lucide-react"
+  ArrowRight,
+} from "lucide-react";
 
 const careerPaths = [
   {
@@ -107,9 +109,11 @@ const careerPaths = [
     color: "text-chart-4",
     bgColor: "bg-chart-4/10",
   },
-]
+];
 
-const explorationTopics = [
+// Comprehensive exploration topics mapped to interests
+const allExplorationTopics = [
+  // Science topics
   {
     title: "Space Exploration",
     description: "Discover the mysteries of the universe",
@@ -117,6 +121,8 @@ const explorationTopics = [
     difficulty: "Advanced",
     duration: "45 min",
     participants: 234,
+    interests: ["Science", "Technology"],
+    url: "/learn?subject=space-exploration",
   },
   {
     title: "Ocean Life",
@@ -125,15 +131,185 @@ const explorationTopics = [
     difficulty: "Intermediate",
     duration: "30 min",
     participants: 189,
+    interests: ["Science"],
+    url: "/learn?subject=ocean-life",
   },
   {
-    title: "Ancient Civilizations",
-    description: "Journey through history and culture",
-    icon: "🏛️",
-    difficulty: "Beginner",
-    duration: "25 min",
-    participants: 156,
+    title: "Human Biology",
+    description: "Learn how the human body works",
+    icon: "🧬",
+    difficulty: "Intermediate",
+    duration: "40 min",
+    participants: 178,
+    interests: ["Science", "Medicine"],
+    url: "/learn?subject=biology",
   },
+  {
+    title: "Climate Science",
+    description: "Understanding our changing planet",
+    icon: "🌍",
+    difficulty: "Intermediate",
+    duration: "35 min",
+    participants: 201,
+    interests: ["Science"],
+    url: "/learn?subject=climate",
+  },
+  // Technology topics
+  {
+    title: "Artificial Intelligence",
+    description: "Discover the future of AI and machine learning",
+    icon: "🤖",
+    difficulty: "Advanced",
+    duration: "50 min",
+    participants: 312,
+    interests: ["Technology", "Engineering"],
+    url: "/learn?subject=ai",
+  },
+  {
+    title: "Web Development",
+    description: "Build modern websites and apps",
+    icon: "💻",
+    difficulty: "Beginner",
+    duration: "40 min",
+    participants: 267,
+    interests: ["Technology", "Engineering"],
+    url: "/learn?subject=web-dev",
+  },
+  {
+    title: "Cybersecurity",
+    description: "Protect digital systems and data",
+    icon: "🔒",
+    difficulty: "Advanced",
+    duration: "45 min",
+    participants: 198,
+    interests: ["Technology"],
+    url: "/learn?subject=cybersecurity",
+  },
+  {
+    title: "Robotics",
+    description: "Design and program robots",
+    icon: "🦾",
+    difficulty: "Intermediate",
+    duration: "50 min",
+    participants: 156,
+    interests: ["Technology", "Engineering"],
+    url: "/learn?subject=robotics",
+  },
+  // Art topics
+  {
+    title: "Digital Art",
+    description: "Create stunning digital illustrations",
+    icon: "🎨",
+    difficulty: "Beginner",
+    duration: "30 min",
+    participants: 223,
+    interests: ["Art"],
+    url: "/learn?subject=digital-art",
+  },
+  {
+    title: "Animation",
+    description: "Bring characters and stories to life",
+    icon: "🎬",
+    difficulty: "Intermediate",
+    duration: "45 min",
+    participants: 189,
+    interests: ["Art", "Technology"],
+    url: "/learn?subject=animation",
+  },
+  {
+    title: "Photography",
+    description: "Capture the world through your lens",
+    icon: "📸",
+    difficulty: "Beginner",
+    duration: "35 min",
+    participants: 245,
+    interests: ["Art"],
+    url: "/learn?subject=photography",
+  },
+  {
+    title: "Graphic Design",
+    description: "Master visual communication",
+    icon: "✨",
+    difficulty: "Intermediate",
+    duration: "40 min",
+    participants: 198,
+    interests: ["Art", "Technology"],
+    url: "/learn?subject=graphic-design",
+  },
+  // Music topics
+  {
+    title: "Music Production",
+    description: "Create beats and produce tracks",
+    icon: "🎵",
+    difficulty: "Intermediate",
+    duration: "45 min",
+    participants: 167,
+    interests: ["Music"],
+    url: "/learn?subject=music-production",
+  },
+  {
+    title: "Music Theory",
+    description: "Understand the language of music",
+    icon: "�",
+    difficulty: "Beginner",
+    duration: "30 min",
+    participants: 145,
+    interests: ["Music"],
+    url: "/learn?subject=music-theory",
+  },
+  // Business topics
+  {
+    title: "Entrepreneurship",
+    description: "Start and grow your own business",
+    icon: "💼",
+    difficulty: "Intermediate",
+    duration: "40 min",
+    participants: 289,
+    interests: ["Business"],
+    url: "/learn?subject=entrepreneurship",
+  },
+  {
+    title: "Marketing Basics",
+    description: "Learn to promote products and ideas",
+    icon: "📢",
+    difficulty: "Beginner",
+    duration: "35 min",
+    participants: 234,
+    interests: ["Business"],
+    url: "/learn?subject=marketing",
+  },
+  {
+    title: "Financial Literacy",
+    description: "Manage money and build wealth",
+    icon: "💰",
+    difficulty: "Beginner",
+    duration: "30 min",
+    participants: 312,
+    interests: ["Business"],
+    url: "/learn?subject=finance",
+  },
+  // Sports topics
+  {
+    title: "Sports Science",
+    description: "The science behind athletic performance",
+    icon: "⚽",
+    difficulty: "Intermediate",
+    duration: "35 min",
+    participants: 178,
+    interests: ["Sports"],
+    url: "/learn?subject=sports-science",
+  },
+  {
+    title: "Nutrition & Fitness",
+    description: "Optimize your health and performance",
+    icon: "🥗",
+    difficulty: "Beginner",
+    duration: "30 min",
+    participants: 201,
+    interests: ["Sports"],
+    url: "/learn?subject=nutrition",
+  },
+  // Engineering topics
   {
     title: "Renewable Energy",
     description: "Learn about sustainable power sources",
@@ -141,106 +317,170 @@ const explorationTopics = [
     difficulty: "Intermediate",
     duration: "35 min",
     participants: 203,
+    interests: ["Engineering", "Science"],
+    url: "/learn?subject=renewable-energy",
   },
-]
+  {
+    title: "3D Printing",
+    description: "Design and create physical objects",
+    icon: "🖨️",
+    difficulty: "Beginner",
+    duration: "40 min",
+    participants: 167,
+    interests: ["Engineering", "Technology"],
+    url: "/learn?subject=3d-printing",
+  },
+  // Medicine topics
+  {
+    title: "Medical Terminology",
+    description: "Learn the language of healthcare",
+    icon: "🏥",
+    difficulty: "Beginner",
+    duration: "30 min",
+    participants: 156,
+    interests: ["Medicine"],
+    url: "/learn?subject=medical-terms",
+  },
+  {
+    title: "First Aid",
+    description: "Essential emergency medical skills",
+    icon: "🚑",
+    difficulty: "Beginner",
+    duration: "35 min",
+    participants: 234,
+    interests: ["Medicine"],
+    url: "/learn?subject=first-aid",
+  },
+  // General topics
+  {
+    title: "Ancient Civilizations",
+    description: "Journey through history and culture",
+    icon: "🏛️",
+    difficulty: "Beginner",
+    duration: "25 min",
+    participants: 156,
+    interests: ["Science", "Art", "Business"],
+    url: "/learn?subject=history",
+  },
+];
 
 export default function Dreamland() {
-  const { userProfile, updateUserProfile } = useAuth()
-  const [selectedCareer, setSelectedCareer] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [interests, setInterests] = useState<string[]>(["Science", "Technology"])
-  const [showQuiz, setShowQuiz] = useState(false)
-  const [imageGeneratorOpen, setImageGeneratorOpen] = useState(false)
-  const [selectedCareerForImage, setSelectedCareerForImage] = useState<typeof careerPaths[0] | null>(null)
-  const [communityEvents, setCommunityEvents] = useState<any[]>([])
-  const [eventsLoading, setEventsLoading] = useState(false)
-  const [eventsError, setEventsError] = useState<string | null>(null)
+  const { userProfile, updateUserProfile } = useAuth();
+  const router = useRouter();
+  const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [interests, setInterests] = useState<string[]>([
+    "Science",
+    "Technology",
+  ]);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [imageGeneratorOpen, setImageGeneratorOpen] = useState(false);
+  const [selectedCareerForImage, setSelectedCareerForImage] = useState<
+    (typeof careerPaths)[0] | null
+  >(null);
+  const [communityEvents, setCommunityEvents] = useState<any[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState<string | null>(null);
 
   // Load user interests from profile
   useEffect(() => {
     if (userProfile?.preferences?.interests) {
-      setInterests(userProfile.preferences.interests)
+      setInterests(userProfile.preferences.interests);
     }
-  }, [userProfile])
+  }, [userProfile]);
 
   // Fetch real-time events when interests or location changes
   useEffect(() => {
-    fetchMeetupEvents()
-  }, [interests, userProfile?.country])
+    fetchMeetupEvents();
+  }, [interests, userProfile?.country]);
 
   const fetchMeetupEvents = async () => {
-    setEventsLoading(true)
-    setEventsError(null)
-    
+    setEventsLoading(true);
+    setEventsError(null);
+
     try {
-      const location = userProfile?.country || 'South Africa'
-      const interestsQuery = interests.join(',')
-      
+      const location = userProfile?.country || "South Africa";
+      const interestsQuery = interests.join(",");
+
       const response = await fetch(
-        `/api/meetup-events?interests=${encodeURIComponent(interestsQuery)}&location=${encodeURIComponent(location)}`
-      )
-      
-      const data = await response.json()
-      
+        `/api/meetup-events?interests=${encodeURIComponent(
+          interestsQuery
+        )}&location=${encodeURIComponent(location)}`
+      );
+
+      const data = await response.json();
+
       if (data.success) {
-        setCommunityEvents(data.events)
+        setCommunityEvents(data.events);
       } else {
-        setEventsError('Failed to load events')
+        setEventsError("Failed to load events");
       }
     } catch (error) {
-      console.error('Error fetching events:', error)
-      setEventsError('Failed to load events')
+      console.error("Error fetching events:", error);
+      setEventsError("Failed to load events");
     } finally {
-      setEventsLoading(false)
+      setEventsLoading(false);
     }
-  }
+  };
 
   const filteredCareers = careerPaths.filter(
     (career) =>
       career.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       career.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      career.subjects.some((subject) => subject.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+      career.subjects.some((subject) =>
+        subject.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+  );
 
   const addInterest = async (interest: string) => {
     if (!interests.includes(interest)) {
-      const newInterests = [...interests, interest]
-      setInterests(newInterests)
-      
-      // Save to user profile if authenticated
+      const newInterests = [...interests, interest];
+      setInterests(newInterests);
+
+      // Update locally first - Firebase write is batched automatically (writes after 3s inactivity)
       if (userProfile && updateUserProfile) {
         try {
           await updateUserProfile({
             preferences: {
               ...userProfile.preferences,
-              interests: newInterests
-            }
-          })
+              interests: newInterests,
+            },
+          });
         } catch (error) {
-          console.error('Error saving interest:', error)
+          console.error("Error saving interest:", error);
         }
       }
     }
-  }
+  };
 
   const removeInterest = async (interest: string) => {
-    const newInterests = interests.filter((i) => i !== interest)
-    setInterests(newInterests)
-    
-    // Save to user profile if authenticated
+    const newInterests = interests.filter((i) => i !== interest);
+    setInterests(newInterests);
+
+    // Update locally first - Firebase write is batched automatically (writes after 3s inactivity)
     if (userProfile && updateUserProfile) {
       try {
         await updateUserProfile({
           preferences: {
             ...userProfile.preferences,
-            interests: newInterests
-          }
-        })
+            interests: newInterests,
+          },
+        });
       } catch (error) {
-        console.error('Error removing interest:', error)
+        console.error("Error saving interest:", error);
       }
     }
-  }
+  };
+
+  // Filter exploration topics based on user interests
+  const explorationTopics =
+    interests.length > 0
+      ? allExplorationTopics
+          .filter((topic) =>
+            topic.interests.some((interest) => interests.includes(interest))
+          )
+          .slice(0, 8)
+      : allExplorationTopics.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-background">
@@ -256,7 +496,9 @@ export default function Dreamland() {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">Dreamland</h1>
-                <p className="text-muted-foreground">Explore careers and discover your future</p>
+                <p className="text-muted-foreground">
+                  Explore careers and discover your future
+                </p>
               </div>
             </div>
           </div>
@@ -283,7 +525,14 @@ export default function Dreamland() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-2">
-                {["Art", "Music", "Sports", "Business", "Medicine", "Engineering"].map((interest) => (
+                {[
+                  "Art",
+                  "Music",
+                  "Sports",
+                  "Business",
+                  "Medicine",
+                  "Engineering",
+                ].map((interest) => (
                   <Button
                     key={interest}
                     variant="outline"
@@ -318,31 +567,47 @@ export default function Dreamland() {
             <h2 className="text-xl font-semibold mb-4">Career Paths</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredCareers.map((career) => {
-                const Icon = career.icon
+                const Icon = career.icon;
                 return (
                   <Card
                     key={career.id}
-                    className={`cursor-pointer transition-all hover:shadow-lg ${career.bgColor} ${
+                    className={`cursor-pointer transition-all hover:shadow-lg ${
+                      career.bgColor
+                    } ${
                       selectedCareer === career.id ? "ring-2 ring-primary" : ""
                     }`}
-                    onClick={() => setSelectedCareer(selectedCareer === career.id ? null : career.id)}
+                    onClick={() =>
+                      setSelectedCareer(
+                        selectedCareer === career.id ? null : career.id
+                      )
+                    }
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3 mb-2">
                         <div className={`p-2 rounded-lg ${career.bgColor}`}>
                           <Icon className={`h-6 w-6 ${career.color}`} />
                         </div>
-                        <CardTitle className="text-lg">{career.title}</CardTitle>
+                        <CardTitle className="text-lg">
+                          {career.title}
+                        </CardTitle>
                       </div>
-                      <p className="text-sm text-muted-foreground">{career.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {career.description}
+                      </p>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="space-y-3">
                         <div>
-                          <p className="text-xs font-medium mb-1">Key Subjects:</p>
+                          <p className="text-xs font-medium mb-1">
+                            Key Subjects:
+                          </p>
                           <div className="flex flex-wrap gap-1">
                             {career.subjects.map((subject) => (
-                              <Badge key={subject} variant="outline" className="text-xs">
+                              <Badge
+                                key={subject}
+                                variant="outline"
+                                className="text-xs"
+                              >
                                 {subject}
                               </Badge>
                             ))}
@@ -351,10 +616,16 @@ export default function Dreamland() {
                         {selectedCareer === career.id && (
                           <div className="space-y-3 pt-3 border-t">
                             <div>
-                              <p className="text-xs font-medium mb-1">Skills Needed:</p>
+                              <p className="text-xs font-medium mb-1">
+                                Skills Needed:
+                              </p>
                               <div className="flex flex-wrap gap-1">
                                 {career.skills.map((skill) => (
-                                  <Badge key={skill} variant="secondary" className="text-xs">
+                                  <Badge
+                                    key={skill}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
                                     {skill}
                                   </Badge>
                                 ))}
@@ -363,28 +634,35 @@ export default function Dreamland() {
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div>
                                 <p className="font-medium">Education:</p>
-                                <p className="text-muted-foreground">{career.education}</p>
+                                <p className="text-muted-foreground">
+                                  {career.education}
+                                </p>
                               </div>
                               <div>
                                 <p className="font-medium">Salary Range:</p>
-                                <p className="text-muted-foreground">{career.salary}</p>
+                                <p className="text-muted-foreground">
+                                  {career.salary}
+                                </p>
                               </div>
                             </div>
                             <div className="text-xs">
                               <p className="font-medium">Job Market:</p>
-                              <p className="text-muted-foreground">{career.growth}</p>
+                              <p className="text-muted-foreground">
+                                {career.growth}
+                              </p>
                             </div>
                             <div className="pt-3 border-t">
                               <Button
                                 size="sm"
                                 className="w-full"
                                 onClick={() => {
-                                  setSelectedCareerForImage(career)
-                                  setImageGeneratorOpen(true)
+                                  setSelectedCareerForImage(career);
+                                  setImageGeneratorOpen(true);
                                 }}
                               >
                                 <Sparkles className="h-4 w-4 mr-2" />
-                                Try It - See Yourself as {career.title.split(' ').slice(-1)[0]}
+                                Try It - See Yourself as{" "}
+                                {career.title.split(" ").slice(-1)[0]}
                               </Button>
                             </div>
                           </div>
@@ -392,7 +670,7 @@ export default function Dreamland() {
                       </div>
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
           </div>
@@ -407,31 +685,49 @@ export default function Dreamland() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {explorationTopics.map((topic, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <span className="text-3xl">{topic.icon}</span>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm">{topic.title}</h4>
-                      <p className="text-xs text-muted-foreground">{topic.description}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{topic.duration}</span>
+                {explorationTopics.length > 0 ? (
+                  explorationTopics.map((topic, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-3 rounded-lg border hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer"
+                      onClick={() => router.push(topic.url)}
+                    >
+                      <span className="text-3xl">{topic.icon}</span>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm flex items-center gap-2">
+                          {topic.title}
+                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {topic.description}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{topic.duration}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            <span>{topic.participants}</span>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {topic.difficulty}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          <span>{topic.participants}</span>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {topic.difficulty}
-                        </Badge>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Globe className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">
+                      No topics match your selected interests.
+                    </p>
+                    <p className="text-xs mt-1">
+                      Try adding more interests above!
+                    </p>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
 
@@ -448,79 +744,122 @@ export default function Dreamland() {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Based on your interests: {interests.join(', ')}
+                  Based on your interests: {interests.join(", ")}
                 </p>
-                {!eventsLoading && communityEvents.length > 0 && communityEvents[0]?.isMockData && (
-                  <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                      <Sparkles className="h-3 w-3" />
-                      <span>Showing sample events. Click "Search" to find real events on Meetup.</span>
-                    </p>
-                  </div>
-                )}
+                {!eventsLoading &&
+                  communityEvents.length > 0 &&
+                  communityEvents[0]?.isMockData && (
+                    <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        <span>
+                          Showing sample events. Click "Search" to find real
+                          events on Meetup.
+                        </span>
+                      </p>
+                    </div>
+                  )}
               </CardHeader>
               <CardContent className="space-y-4">
                 {eventsLoading ? (
                   <div className="text-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Finding events for you...</p>
+                    <p className="text-sm text-muted-foreground">
+                      Finding events for you...
+                    </p>
                   </div>
                 ) : eventsError ? (
                   <div className="text-center py-8">
-                    <p className="text-sm text-destructive mb-2">{eventsError}</p>
-                    <Button size="sm" variant="outline" onClick={fetchMeetupEvents}>
+                    <p className="text-sm text-destructive mb-2">
+                      {eventsError}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={fetchMeetupEvents}
+                    >
                       Try Again
                     </Button>
                   </div>
                 ) : communityEvents.length === 0 ? (
                   <div className="text-center py-8">
                     <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-                    <p className="text-sm text-muted-foreground">No events found for your interests</p>
-                    <p className="text-xs text-muted-foreground mt-1">Try adding more interests above</p>
+                    <p className="text-sm text-muted-foreground">
+                      No events found for your interests
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Try adding more interests above
+                    </p>
                   </div>
                 ) : (
                   communityEvents.slice(0, 6).map((event, index) => {
-                    const eventDate = new Date(event.dateTime)
-                    const endTime = new Date(event.endTime)
-                    const formattedDate = eventDate.toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      year: 'numeric'
-                    })
-                    const formattedTime = eventDate.toLocaleTimeString('en-US', { 
-                      hour: 'numeric', 
-                      minute: '2-digit',
-                      hour12: true 
-                    })
-                    const formattedEndTime = endTime.toLocaleTimeString('en-US', { 
-                      hour: 'numeric', 
-                      minute: '2-digit',
-                      hour12: true 
-                    })
+                    const eventDate = new Date(event.dateTime);
+                    const endTime = new Date(event.endTime);
+                    const formattedDate = eventDate.toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }
+                    );
+                    const formattedTime = eventDate.toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      }
+                    );
+                    const formattedEndTime = endTime.toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      }
+                    );
 
                     return (
-                      <div key={event.id || index} className="p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <div
+                        key={event.id || index}
+                        className="p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
+                      >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            {event.emoji && <span className="text-lg">{event.emoji}</span>}
-                            <h4 className="font-medium text-sm">{event.title}</h4>
+                            {event.emoji && (
+                              <span className="text-lg">{event.emoji}</span>
+                            )}
+                            <h4 className="font-medium text-sm">
+                              {event.title}
+                            </h4>
                           </div>
-                          <Badge variant={event.type === "Virtual" ? "secondary" : "default"} className="text-xs">
+                          <Badge
+                            variant={
+                              event.type === "Virtual" ? "secondary" : "default"
+                            }
+                            className="text-xs"
+                          >
                             {event.type}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{event.description}</p>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                          {event.description}
+                        </p>
                         <div className="space-y-1 text-xs">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span>
-                              {formattedDate} at {formattedTime} - {formattedEndTime}
+                              {formattedDate} at {formattedTime} -{" "}
+                              {formattedEndTime}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span className="truncate">
-                              {event.venue?.name || event.venue?.city || 'Online'}
+                              {event.venue?.name ||
+                                event.venue?.city ||
+                                "Online"}
                               {event.venue?.city && `, ${event.venue.city}`}
                             </span>
                           </div>
@@ -530,13 +869,16 @@ export default function Dreamland() {
                               <span>{event.going} attending</span>
                             </div>
                             {event.eventUrl && (
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 className="h-6 px-2 text-xs"
-                                onClick={() => window.open(event.eventUrl, '_blank')}
+                                onClick={() =>
+                                  window.open(event.eventUrl, "_blank")
+                                }
                               >
-                                {event.isMockData ? 'Search' : 'View'} <ExternalLink className="h-3 w-3 ml-1" />
+                                {event.isMockData ? "Search" : "View"}{" "}
+                                <ExternalLink className="h-3 w-3 ml-1" />
                               </Button>
                             )}
                           </div>
@@ -547,20 +889,22 @@ export default function Dreamland() {
                           )}
                         </div>
                       </div>
-                    )
+                    );
                   })
                 )}
-                {!eventsLoading && !eventsError && communityEvents.length > 6 && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => {
-                      // Show all events or navigate to events page
-                    }}
-                  >
-                    View All {communityEvents.length} Events
-                  </Button>
-                )}
+                {!eventsLoading &&
+                  !eventsError &&
+                  communityEvents.length > 6 && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        // Show all events or navigate to events page
+                      }}
+                    >
+                      View All {communityEvents.length} Events
+                    </Button>
+                  )}
               </CardContent>
             </Card>
           </div>
@@ -569,16 +913,16 @@ export default function Dreamland() {
           {showQuiz ? (
             <div className="mt-8">
               <div className="mb-6 text-center">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowQuiz(false)}
                   className="mb-4"
                 >
                   ← Back to Career Explorer
                 </Button>
               </div>
-              <AIQuiz 
-                interests={interests} 
+              <AIQuiz
+                interests={interests}
                 onComplete={() => setShowQuiz(false)}
               />
             </div>
@@ -589,12 +933,15 @@ export default function Dreamland() {
                 <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
                   <CardContent className="p-6">
                     <Rocket className="h-12 w-12 text-primary mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-2">Ready to Explore Your Future?</h3>
+                    <h3 className="text-xl font-bold mb-2">
+                      Ready to Explore Your Future?
+                    </h3>
                     <p className="text-muted-foreground mb-4">
-                      Take our AI-powered career assessment quiz to discover paths that match your interests and strengths.
+                      Take our AI-powered career assessment quiz to discover
+                      paths that match your interests and strengths.
                     </p>
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="bg-primary hover:bg-primary/90"
                       onClick={() => setShowQuiz(true)}
                     >
@@ -614,8 +961,8 @@ export default function Dreamland() {
         <CareerImageGenerator
           isOpen={imageGeneratorOpen}
           onClose={() => {
-            setImageGeneratorOpen(false)
-            setSelectedCareerForImage(null)
+            setImageGeneratorOpen(false);
+            setSelectedCareerForImage(null);
           }}
           careerTitle={selectedCareerForImage.title}
           careerDescription={selectedCareerForImage.description}
@@ -623,5 +970,5 @@ export default function Dreamland() {
         />
       )}
     </div>
-  )
+  );
 }

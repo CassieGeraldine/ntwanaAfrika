@@ -66,7 +66,7 @@ interface UserProfile {
     name: string;
     coins: number;
     redeemedAt: string;
-    status: 'pending' | 'collected' | 'expired';
+    status: "pending" | "collected" | "expired";
   }>;
   // User Preferences
   preferences?: {
@@ -110,6 +110,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingUpdates, setPendingUpdates] = useState<Partial<UserProfile>>(
+    {}
+  );
+  const [writeTimeoutId, setWriteTimeoutId] = useState<NodeJS.Timeout | null>(
+    null
+  );
+
+  // Debounced write to Firebase - writes after 3 seconds of inactivity
+  useEffect(() => {
+    if (Object.keys(pendingUpdates).length === 0 || !currentUser) return;
+
+    // Emit saving event
+    window.dispatchEvent(new CustomEvent("data-saving"));
+
+    // Clear existing timeout
+    if (writeTimeoutId) {
+      clearTimeout(writeTimeoutId);
+    }
+
+    // Set new timeout to write after 3 seconds
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), pendingUpdates);
+        console.log(
+          "✅ Batched updates saved to Firebase:",
+          Object.keys(pendingUpdates)
+        );
+        setPendingUpdates({});
+
+        // Emit saved event
+        window.dispatchEvent(new CustomEvent("data-saved"));
+      } catch (error) {
+        console.error("Error saving batched updates:", error);
+      }
+    }, 3000);
+
+    setWriteTimeoutId(timeoutId);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [pendingUpdates, currentUser]);
+
+  // Save pending updates when user navigates away or closes tab
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (Object.keys(pendingUpdates).length > 0 && currentUser) {
+        // Use sendBeacon for reliable write on page unload
+        const payload = JSON.stringify({
+          uid: currentUser.uid,
+          updates: pendingUpdates,
+        });
+
+        // Fallback to synchronous write if available
+        try {
+          await updateDoc(doc(db, "users", currentUser.uid), pendingUpdates);
+        } catch (error) {
+          console.error("Error saving on unload:", error);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // Also save when component unmounts (navigation)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (Object.keys(pendingUpdates).length > 0 && currentUser) {
+        // Flush pending updates immediately
+        updateDoc(doc(db, "users", currentUser.uid), pendingUpdates).catch(
+          console.error
+        );
+      }
+    };
+  }, [pendingUpdates, currentUser]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -128,6 +203,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
+  // Auto-update streak once per day on login (only writes if it's a new day)
+  useEffect(() => {
+    if (!currentUser || !userProfile) return;
+
+    const checkAndUpdateStreak = async () => {
+      const lastLogin = userProfile.lastLoginDate
+        ? new Date(userProfile.lastLoginDate)
+        : null;
+      const today = new Date();
+
+      // Check if we already updated today
+      if (lastLogin) {
+        const lastLoginDateOnly = new Date(
+          lastLogin.getFullYear(),
+          lastLogin.getMonth(),
+          lastLogin.getDate()
+        );
+        const todayDateOnly = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate()
+        );
+
+        if (lastLoginDateOnly.getTime() === todayDateOnly.getTime()) {
+          console.log("✅ Streak already updated today");
+          return;
+        }
+      }
+
+      // Calculate streak
+      const diffTime = lastLogin
+        ? Math.abs(today.getTime() - lastLogin.getTime())
+        : 0;
+      const diffDays = lastLogin
+        ? Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        : 0;
+
+      let newStreak = userProfile.streak || 0;
+
+      if (diffDays === 1) {
+        newStreak += 1;
+      } else if (diffDays > 1) {
+        newStreak = 1;
+      } else if (!lastLogin) {
+        newStreak = 1;
+      }
+
+      console.log("🔥 Auto-updating streak on login:", newStreak);
+      await updateUserProfile({
+        streak: newStreak,
+        lastLoginDate: today.toISOString(),
+      });
+    };
+
+    // Run once when user profile loads
+    checkAndUpdateStreak();
+  }, [currentUser?.uid, userProfile?.lastLoginDate]); // Only re-run if user changes or lastLoginDate changes
+
   const loadUserProfile = async (uid: string) => {
     try {
       const userDoc = await getDoc(doc(db, "users", uid));
@@ -145,7 +278,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Helper function to create default user profile
-  const createDefaultProfile = (uid: string, user: User | null): UserProfile => {
+  const createDefaultProfile = (
+    uid: string,
+    user: User | null
+  ): UserProfile => {
     return {
       uid,
       email: user?.email || null,
@@ -285,14 +421,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Update existing profile with Google info if needed
       const existingProfile = userDoc.data() as UserProfile;
       const updates: Partial<UserProfile> = {};
-      
+
       if (!existingProfile.firstName || !existingProfile.lastName) {
         const displayName = user.displayName || "";
         const nameParts = displayName.split(" ");
         updates.firstName = nameParts[0] || "";
         updates.lastName = nameParts.slice(1).join(" ") || "";
       }
-      
+
       if (!existingProfile.photoURL && user.photoURL) {
         updates.photoURL = user.photoURL;
       }
@@ -300,7 +436,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (Object.keys(updates).length > 0) {
         await updateDoc(doc(db, "users", user.uid), updates);
       }
-      
+
       await loadUserProfile(user.uid);
     }
   };
@@ -318,10 +454,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!currentUser) return;
 
     try {
+      // Update local state immediately for instant UI feedback
+      setUserProfile((prev) => (prev ? { ...prev, ...updates } : null));
+
+      // Queue updates for batched write
+      setPendingUpdates((prev) => ({ ...prev, ...updates }));
+
+      console.log("📝 Queued for batching:", Object.keys(updates));
+    } catch (error) {
+      console.error("Error queuing user profile update:", error);
+      throw error;
+    }
+  };
+
+  // Force immediate write (use for critical operations like authentication)
+  const forceWriteUserProfile = async (updates: Partial<UserProfile>) => {
+    if (!currentUser) return;
+
+    try {
       await updateDoc(doc(db, "users", currentUser.uid), updates);
       setUserProfile((prev) => (prev ? { ...prev, ...updates } : null));
+
+      // Clear these updates from pending queue
+      setPendingUpdates((prev) => {
+        const newPending = { ...prev };
+        Object.keys(updates).forEach(
+          (key) => delete newPending[key as keyof UserProfile]
+        );
+        return newPending;
+      });
+
+      console.log("💾 Force saved to Firebase:", Object.keys(updates));
     } catch (error) {
-      console.error("Error updating user profile:", error);
+      console.error("Error force writing user profile:", error);
       throw error;
     }
   };

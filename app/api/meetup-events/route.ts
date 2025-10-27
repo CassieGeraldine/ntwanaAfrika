@@ -1,19 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const interests = searchParams.get('interests') || '';
-    const location = searchParams.get('location') || 'South Africa';
-    const lat = searchParams.get('lat');
-    const lon = searchParams.get('lon');
+    const interests = searchParams.get("interests") || "";
+    const location = searchParams.get("location") || "South Africa";
+    const lat = searchParams.get("lat");
+    const lon = searchParams.get("lon");
 
     // Meetup API endpoint (GraphQL)
-    const MEETUP_API_URL = 'https://api.meetup.com/gql';
-    
+    const MEETUP_API_URL = "https://api.meetup.com/gql";
+
     // Build the query based on interests and location
-    const keywords = interests.split(',').filter(Boolean).join(' OR ');
-    
+    const keywords = interests.split(",").filter(Boolean).join(" OR ");
+
     // GraphQL query for Meetup events
     const query = `
       query($lat: Float, $lon: Float, $radius: Int, $source: String) {
@@ -77,51 +77,51 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       events: mockEvents,
-      source: 'mock' // Change to 'meetup' when using real API
+      source: "mock", // Change to 'meetup' when using real API
     });
-
   } catch (error) {
-    console.error('Error fetching Meetup events:', error);
+    console.error("Error fetching Meetup events:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch events' },
+      { success: false, error: "Failed to fetch events" },
       { status: 500 }
     );
   }
 }
 
 function generateMockEvents(interests: string, location: string) {
-  const interestList = interests.split(',').filter(Boolean);
+  const interestList = interests.split(",").filter(Boolean);
   const eventTypes = [
-    { type: 'Workshop', emoji: '🛠️' },
-    { type: 'Meetup', emoji: '🤝' },
-    { type: 'Conference', emoji: '🎤' },
-    { type: 'Networking', emoji: '🌐' },
-    { type: 'Seminar', emoji: '📚' }
+    { type: "Workshop", emoji: "🛠️" },
+    { type: "Meetup", emoji: "🤝" },
+    { type: "Conference", emoji: "🎤" },
+    { type: "Networking", emoji: "🌐" },
+    { type: "Seminar", emoji: "📚" },
   ];
 
   const venues = [
-    'Innovation Hub',
-    'Community Center',
-    'Tech Campus',
-    'Business Park',
-    'University Auditorium',
-    'Co-working Space'
+    "Innovation Hub",
+    "Community Center",
+    "Tech Campus",
+    "Business Park",
+    "University Auditorium",
+    "Co-working Space",
   ];
 
-  const cities = location === 'South Africa' 
-    ? ['Johannesburg', 'Cape Town', 'Durban', 'Pretoria']
-    : [location];
+  const cities =
+    location === "South Africa"
+      ? ["Johannesburg", "Cape Town", "Durban", "Pretoria"]
+      : [location];
 
   // Generate events based on user interests
   const events = [];
   const now = new Date();
 
   for (let i = 0; i < 8; i++) {
-    const interest = interestList[i % interestList.length] || 'Technology';
+    const interest = interestList[i % interestList.length] || "Technology";
     const eventType = eventTypes[i % eventTypes.length];
     const venue = venues[i % venues.length];
     const city = cities[i % cities.length];
-    
+
     // Generate dates for next 30 days
     const eventDate = new Date(now);
     eventDate.setDate(now.getDate() + Math.floor(Math.random() * 30) + 1);
@@ -142,25 +142,27 @@ function generateMockEvents(interests: string, location: string) {
         name: venue,
         address: `${Math.floor(Math.random() * 200) + 1} Main Street`,
         city: city,
-        state: 'Gauteng',
-        country: 'South Africa'
+        state: "Gauteng",
+        country: "South Africa",
       },
       group: {
         name: `${interest} Enthusiasts ${city}`,
-        urlname: `${interest.toLowerCase()}-${city.toLowerCase()}`
+        urlname: `${interest.toLowerCase()}-${city.toLowerCase()}`,
       },
       going: going,
       // Use generic Meetup search URL instead of fake group URL
-      eventUrl: `https://www.meetup.com/find/?keywords=${encodeURIComponent(interest)}&location=${encodeURIComponent(city + ', South Africa')}`,
+      eventUrl: `https://www.meetup.com/find/?keywords=${encodeURIComponent(
+        interest
+      )}&location=${encodeURIComponent(city + ", South Africa")}`,
       imageUrl: null,
-      type: Math.random() > 0.3 ? 'In-person' : 'Virtual',
+      type: Math.random() > 0.3 ? "In-person" : "Virtual",
       emoji: eventType.emoji,
-      isMockData: true // Flag to indicate this is mock data
+      isMockData: true, // Flag to indicate this is mock data
     });
   }
 
   // Sort events by date
-  return events.sort((a, b) => 
-    new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
+  return events.sort(
+    (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
   );
 }
