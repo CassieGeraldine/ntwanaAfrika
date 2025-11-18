@@ -83,7 +83,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
 
 # Existing Gemini AI (keep these)
 GOOGLE_API_KEY=your_gemini_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.0-flash
 ```
 
 ### 4. **Test the Integration**
